@@ -1,0 +1,234 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+body {
+  margin: 0;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Oxygen",
+    "Ubuntu", "Cantarell", "Fira Sans", "Droid Sans", "Helvetica Neue",
+    sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+.dark body {
+  background-color: #000000;
+  color: #ffffff;
+}
+
+body:not(.dark body) {
+  background-color: #ffffff;
+  color: #000000;
+}
+
+code {
+  font-family: source-code-pro, Menlo, Monaco, Consolas, "Courier New",
+    monospace;
+}
+
+/* Custom input styles */
+.input-typing-border {
+  border-color: #374151; /* gray-700 for elegance */
+  background-color: #1f2937; /* gray-800 */
+  color: #ffffff;
+  transition: all 500ms cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  font-size: 0.875rem;
+}
+
+.dark .input-typing-border {
+  border-color: #374151;
+  background-color: #1f2937;
+  color: #ffffff;
+}
+
+:not(.dark) .input-typing-border {
+  border-color: #d1d5db;
+  background-color: #ffffff;
+  color: #000000;
+}
+
+.input-typing-border:not(:placeholder-shown) {
+  border-color: #8b5cf6; /* purple-500 for elegance */
+  transition: all 500ms cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.input-typing-border:focus {
+  outline: none;
+  border-color: #6366f1; /* indigo-500 */
+  box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.1);
+  transition: all 500ms cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.input-typing-border:not(:placeholder-shown):focus {
+  border-color: #8b5cf6; /* purple-500 */
+  transition: all 500ms cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.input-typing-border::placeholder {
+  color: #9ca3af;
+}
+
+/* Floating label container */
+.input-container {
+  position: relative;
+  margin-bottom: 0.75rem;
+  max-width: 370px;
+}
+
+/* Label styles */
+.input-label {
+  position: absolute;
+  left: 54px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #9ca3af; /* gray-400 */
+  transition: all 500ms cubic-bezier(0.4, 0, 0.2, 1);
+  pointer-events: none;
+  font-size: 0.875rem;
+}
+
+/* Move label up only when input has value */
+.input-container input:not(:placeholder-shown):not([value=""]) + .input-label {
+  top: -0.75rem;
+  transform: none;
+  font-size: 0.75rem;
+  color: #8b5cf6; /* purple-500 */
+  transition: all 500ms cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Line clamp utilities for task descriptions */
+.line-clamp-1 {
+  overflow: hidden;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 1;
+}
+
+.line-clamp-2 {
+  overflow: hidden;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+}
+
+.line-clamp-3 {
+  overflow: hidden;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 3;
+}
+
+/* Smooth transitions for task cards */
+.task-card {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.task-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+}
+
+/* Custom scrollbar for task lists */
+.task-list::-webkit-scrollbar {
+  width: 6px;
+}
+
+.task-list::-webkit-scrollbar-track {
+  background: #f1f5f9;
+  border-radius: 3px;
+}
+
+.task-list::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 3px;
+}
+
+.task-list::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+}
+
+/* Loading animation for task cards */
+@keyframes task-loading {
+  0% {
+    opacity: 0.6;
+    transform: scale(0.98);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  100% {
+    opacity: 0.6;
+    transform: scale(0.98);
+  }
+}
+
+.task-loading {
+  animation: task-loading 1.5s ease-in-out infinite;
+}
+
+/* Status indicator animations */
+.status-indicator {
+  position: relative;
+}
+
+.status-indicator::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: currentColor;
+  opacity: 0.3;
+  animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+@keyframes pulse {
+  0%, 100% {
+    opacity: 0.3;
+    transform: translate(-50%, -50%) scale(1);
+  }
+  50% {
+    opacity: 0.6;
+    transform: translate(-50%, -50%) scale(1.2);
+  }
+}
+
+/* Priority indicator styles */
+.priority-high {
+  border-left: 4px solid #ef4444;
+}
+
+.priority-medium {
+  border-left: 4px solid #f97316;
+}
+
+.priority-low {
+  border-left: 4px solid #22c55e;
+}
+
+/* Overdue task highlighting */
+.task-overdue {
+  border-left: 4px solid #ef4444;
+  background: linear-gradient(135deg, #fef2f2 0%, #ffffff 100%);
+}
+
+.task-overdue:hover {
+  background: linear-gradient(135deg, #fee2e2 0%, #ffffff 100%);
+}
+
+/* Completed task styling */
+.task-completed {
+  opacity: 0.8;
+  background: linear-gradient(135deg, #f0fdf4 0%, #ffffff 100%);
+}
+
+.task-completed:hover {
+  opacity: 1;
+  background: linear-gradient(135deg, #dcfce7 0%, #ffffff 100%);
+}

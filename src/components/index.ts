@@ -8,6 +8,16 @@ export { default as TaskActions } from './TaskActions';
 export { default as TaskSkeleton } from './TaskSkeleton';
 export { default as EmptyState } from './EmptyState';
 
+// Tasks page components
+export { default as TasksHeader } from './TasksHeader';
+export { default as TasksStats } from './TasksStats';
+export { default as TasksFilters } from './TasksFilters';
+export { default as TasksToolbar } from './TasksToolbar';
+export { default as TasksListHeader } from './TasksListHeader';
+export { default as TasksLoadingState } from './TasksLoadingState';
+export { default as TasksErrorState } from './TasksErrorState';
+export { default as TasksSuccessMessage } from './TasksSuccessMessage';
+
 // Other components
 export { default as AuthDebug } from './AuthDebug';
 export { default as Modal } from './Modal';

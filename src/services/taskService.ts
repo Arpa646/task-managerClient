@@ -199,16 +199,17 @@ class TaskService {
       console.log('TaskService: Response data:', data);
 
       if (response.ok && data.success) {
-        console.log('TaskService: Task created successfully:', data.data.task);
+        console.log('TaskService: Task created successfully:', data.data);
         console.log('TaskService: Response data structure:', data);
-        console.log('TaskService: Task data type:', typeof data.data.task);
+        console.log('TaskService: Task data type:', typeof data.data);
         
         // Ensure we return a valid task object
-        const task = data.data.task;
-        return task;
+        const task = data.data;
+        console.log("ckek",task)
+        // return task;
         if (task && typeof task === 'object' && task._id) {
           console.log('TaskService: Valid task object returned:', task);
-        
+          return task;
         } else {
           console.error('TaskService: Invalid task object in response:', task);
           throw new Error('Invalid task object received from server');

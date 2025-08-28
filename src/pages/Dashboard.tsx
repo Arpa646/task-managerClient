@@ -1,12 +1,14 @@
 import React, { useState, useEffect, useCallback } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { getAuthUser } from '../utils/auth';
 import StatsCard from '../components/StatsCard';
 import ProjectAnalytics from '../components/ProjectAnalytics';
 import MyProgress from '../components/MyProgress';
-import { FaClipboardList, FaClock, FaCheckCircle, FaExclamationTriangle, FaCalendarAlt, FaChartLine } from 'react-icons/fa';
+import { FaClipboardList, FaClock, FaCheckCircle, FaExclamationTriangle, FaCalendarAlt, FaChartLine, FaPlus } from 'react-icons/fa';
 import { taskService, Task } from '../services/taskService';
 
 const Dashboard: React.FC = () => {
+  const navigate = useNavigate();
   const user = getAuthUser();
   const [analyticsPeriod, setAnalyticsPeriod] = useState('this_month');
   const [tasks, setTasks] = useState<Task[]>([]);
@@ -114,11 +116,25 @@ const Dashboard: React.FC = () => {
                     })}</span>
                   </div>
                 </div>
-                <div className="mt-4 lg:mt-0">
+                <div className="mt-4 lg:mt-0 flex flex-col gap-3">
                   <div className="bg-gradient-to-r from-blue-500 to-indigo-600 rounded-xl p-4 text-white text-center">
                     <div className="text-2xl font-bold">{totalTasks}</div>
                     <div className="text-blue-100 text-sm">Total Tasks</div>
                   </div>
+                  <div className="flex-1 flex justify-center">
+          <button
+            onClick={() => {
+              console.log('TasksListHeader: Add task button clicked');
+              console.log('TasksListHeader: Navigating to create task page');
+              navigate('/tasks/create');
+            }}
+            className="bg-gradient-to-r from-purple-600 to-indigo-600 text-white px-6 py-3 rounded-xl hover:from-purple-700 hover:to-indigo-700 transition-all duration-200 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 flex items-center gap-2 font-medium"
+          >
+            <FaPlus className="w-4 h-4" />
+            Add New Task
+          </button>
+        </div>
+        
                 </div>
               </div>
             </div>
@@ -215,19 +231,38 @@ const Dashboard: React.FC = () => {
             <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 lg:p-8">
               <h2 className="text-xl lg:text-2xl font-semibold text-gray-900 mb-6">Quick Actions</h2>
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                <button className="bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white rounded-xl p-4 text-center transition-all duration-200 transform hover:scale-105 hover:shadow-lg">
+                <button 
+                  onClick={() => navigate('/tasks/create')}
+                  className="bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white rounded-xl p-4 text-center transition-all duration-200 transform hover:scale-105 hover:shadow-lg"
+                >
                   <FaClipboardList className="text-2xl mx-auto mb-2" />
                   <div className="font-medium">Add Task</div>
                 </button>
-                <button className="bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white rounded-xl p-4 text-center transition-all duration-200 transform hover:scale-105 hover:shadow-lg">
-                  <FaCheckCircle className="text-2xl mx-auto mb-2" />
-                  <div className="font-medium">Mark Complete</div>
-                </button>
-                <button className="bg-gradient-to-r from-purple-500 to-purple-600 hover:from-purple-600 hover:to-purple-700 text-white rounded-xl p-4 text-center transition-all duration-200 transform hover:scale-105 hover:shadow-lg">
+                <div className="flex-1 flex justify-center">
+          <button
+            onClick={() => {
+              console.log('TasksListHeader: Add task button clicked');
+              console.log('TasksListHeader: Navigating to create task page');
+              navigate('/tasks/create');
+            }}
+            className="bg-gradient-to-r from-purple-600 to-indigo-600 text-white px-6 py-3 rounded-xl hover:from-purple-700 hover:to-indigo-700 transition-all duration-200 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 flex items-center gap-2 font-medium"
+          >
+            <FaPlus className="w-4 h-4" />
+            Add New Task
+          </button>
+        </div>
+        
+                <button 
+                  onClick={() => navigate('/tasks')}
+                  className="bg-gradient-to-r from-purple-500 to-purple-600 hover:from-purple-600 hover:to-purple-700 text-white rounded-xl p-4 text-center transition-all duration-200 transform hover:scale-105 hover:shadow-lg"
+                >
                   <FaChartLine className="text-2xl mx-auto mb-2" />
                   <div className="font-medium">View Reports</div>
                 </button>
-                <button className="bg-gradient-to-r from-indigo-500 to-indigo-600 hover:from-indigo-600 hover:to-indigo-700 text-white rounded-xl p-4 text-center transition-all duration-200 transform hover:scale-105 hover:shadow-lg">
+                <button 
+                  onClick={() => navigate('/tasks')}
+                  className="bg-gradient-to-r from-indigo-500 to-indigo-600 hover:from-indigo-600 hover:to-indigo-700 text-white rounded-xl p-4 text-center transition-all duration-200 transform hover:scale-105 hover:shadow-lg"
+                >
                   <FaClock className="text-2xl mx-auto mb-2" />
                   <div className="font-medium">Set Reminder</div>
                 </button>

@@ -22,7 +22,7 @@ export { default as TasksSuccessMessage } from './TasksSuccessMessage';
 export { default as AuthDebug } from './AuthDebug';
 export { default as Modal } from './Modal';
 export { default as MyProgress } from './MyProgress';
-export { default as Navbar } from './Navbar';
+
 export { default as NewsletterSection } from './NewsletterSection';
 export { default as PrivateRoute } from './PrivateRoute';
 export { default as ProjectAnalytics } from './ProjectAnalytics';

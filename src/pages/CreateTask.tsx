@@ -2,13 +2,16 @@ import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import TaskForm from '../components/TaskForm';
 import { FaArrowLeft } from 'react-icons/fa';
+import { Task } from '../services';
 
 const CreateTask: React.FC = () => {
   const navigate = useNavigate();
 
-  const handleCreateSuccess = () => {
+  const handleCreateSuccess = (task?: Task) => {
     // Redirect to tasks page after successful creation
-    console.log("creted task sucessfully")
+    if (task) {
+      console.log("created task successfully", task);
+    }
     navigate('/tasks');
   };
 

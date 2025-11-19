@@ -8,8 +8,8 @@ The authentication system has been updated to use:
 - Private route protection
 
 ## API Endpoints
-- **Login**: `https://event-gray-ten.vercel.app/api/auth/login`
-- **Signup**: `https://event-gray-ten.vercel.app/api/auth/signup`
+- **Login**: `https://task-manager-server-three-iota.vercel/api/auth/login`
+- **Signup**: `https://task-manager-server-three-iota.vercel/api/auth/signup`
 
 ## Files Modified/Created
 
@@ -130,7 +130,7 @@ const response = await fetch('/api/endpoint', {
 4. **TypeScript errors**: Ensure all types are properly imported
 
 ### Testing Authentication
-1. Start your backend server on `https://event-gray-ten.vercel.app`
+1. Start your backend server on `https://task-manager-server-three-iota.vercel.app`
 2. Register a new user with the signup form
 3. Login with the credentials
 4. Verify token is saved in localStorage (check browser DevTools)
@@ -140,14 +140,14 @@ const response = await fetch('/api/endpoint', {
 ## Environment Variables (Recommended)
 Create a `.env` file for sensitive configuration:
 ```
-VITE_API_BASE_URL=https://event-gray-ten.vercel.app/api
+VITE_API_BASE_URL=https://task-manager-server-three-iota.vercel.app/api
 VITE_IMAGEBB_API_KEY=your_imagebb_api_key
 ```
 
 Then update `src/config/index.ts` to use environment variables:
 ```typescript
 export const API_CONFIG = {
-  BASE_URL: import.meta.env.VITE_API_BASE_URL || 'https://event-gray-ten.vercel.app/api',
+  BASE_URL: import.meta.env.VITE_API_BASE_URL || 'https://task-manager-server-three-iota.vercel.app/api',
   // ... rest of config
 };
 

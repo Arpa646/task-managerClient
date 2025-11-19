@@ -332,6 +332,43 @@ const Tasks: React.FC = () => {
                       console.error('Tasks page: Error deleting task:', error);
                     }
                   }}
+                  onReorder={async (sourceIndex: number, destinationIndex: number) => {
+                    try {
+                      console.log('Tasks page: onReorder called', sourceIndex, destinationIndex);
+
+                      // Working on the currently-displayed, filtered/sorted list
+                      const displayed = filteredAndSortedTasks;
+                      if (sourceIndex < 0 || sourceIndex >= displayed.length) return;
+                      if (destinationIndex < 0 || destinationIndex >= displayed.length) return;
+
+                      const moved = displayed[sourceIndex];
+                      const newDisplayed = Array.from(displayed);
+                      newDisplayed.splice(sourceIndex, 1);
+                      newDisplayed.splice(destinationIndex, 0, moved);
+
+                      // Build new full tasks array by replacing the positions of displayed items
+                      const displayedIds = newDisplayed.map(t => t._id);
+                      const queue = [...newDisplayed];
+                      const newTasks = tasks.map(t => {
+                        if (displayedIds.includes(t._id)) {
+                          return queue.shift()!;
+                        }
+                        return t;
+                      });
+
+                      setTasks(newTasks);
+
+                      // Attempt to persist ordering (best-effort). Server must support reorder endpoint.
+                      if (userId) {
+                        const success = await taskService.reorderTasks(userId, newTasks.map(t => t._id));
+                        if (!success) {
+                          console.warn('Tasks page: reorder API did not persist ordering');
+                        }
+                      }
+                    } catch (err) {
+                      console.error('Tasks page: Error handling reorder:', err);
+                    }
+                  }}
                 />
               </div>
             </div>

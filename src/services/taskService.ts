@@ -290,6 +290,36 @@ class TaskService {
       throw error;
     }
   }
+
+  /**
+   * Reorder tasks for a user (best-effort).
+   * Sends an ordered array of task IDs to the server. Server must support PATCH /tasks/reorder
+   */
+  async reorderTasks(userId: string, orderedIds: string[]): Promise<boolean> {
+    try {
+      console.log('TaskService: Reordering tasks for user:', userId, orderedIds);
+      const response = await fetch(`${this.baseUrl}${this.endpoints.UPDATE}/reorder`, {
+        method: 'PATCH',
+        headers: getAuthHeaders(),
+        body: JSON.stringify({ userId, orderedIds }),
+      });
+
+      if (!response.ok) {
+        console.warn('TaskService: reorderTasks HTTP error:', response.status);
+      }
+
+      const data: any = await response.json();
+      if (response.ok && data && data.success) {
+        return true;
+      }
+
+      console.warn('TaskService: reorderTasks API did not report success:', data);
+      return false;
+    } catch (error) {
+      console.error('Error reordering tasks:', error);
+      return false;
+    }
+  }
 }
 
 // Export a singleton instance

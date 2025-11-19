@@ -1,5 +1,7 @@
+'use client'
+
 import React, { useEffect, useRef } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useRouter } from 'next/navigation';
 import TaskSkeleton from './TaskSkeleton';
 import EmptyState from './EmptyState';
 import TaskItem from './TaskItem';
@@ -14,7 +16,7 @@ interface TaskListProps {
 }
 
 const TaskList: React.FC<TaskListProps> = ({ tasks, onDelete, loading = false, newlyCreatedTaskId, onReorder }) => {
-  const navigate = useNavigate();
+  const router = useRouter();
   const newlyCreatedTaskRef = useRef<HTMLDivElement>(null);
 
   // Scroll to newly created task when it appears
@@ -36,7 +38,11 @@ const TaskList: React.FC<TaskListProps> = ({ tasks, onDelete, loading = false, n
 
   const handleUpdateClick = (task: Task) => {
     console.log('Navigating to update page for task:', task);
-    navigate('/tasks/edit', { state: { task } });
+    // Store task in sessionStorage temporarily for Next.js navigation
+    if (typeof window !== 'undefined') {
+      sessionStorage.setItem('editTask', JSON.stringify(task));
+    }
+    router.push(`/tasks/edit?taskId=${task._id}`);
   };
 
   // Drag and drop handlers

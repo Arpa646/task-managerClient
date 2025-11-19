@@ -85,27 +85,38 @@ class TaskService {
 
   async getUserTasks(id: string): Promise<Task[]> {
     try {
+      // Ensure we're on the client side
+      if (typeof window === 'undefined') {
+        throw new Error('getUserTasks can only be called on the client side');
+      }
+
       console.log('TaskService: Fetching tasks for user ID:', id);
       const headers = getAuthHeaders();
       console.log('TaskService: Request headers:', headers);
-      console.log('TaskService: Request URL:', `${this.baseUrl}${this.endpoints.GET_USER_TASKS_BY_ID.replace(':userId', id)}`);
       
-      const response = await fetch(`${this.baseUrl}${this.endpoints.GET_USER_TASKS_BY_ID.replace(':userId', id)}`, {
+      // Use the endpoint with userId
+      const url = `${this.baseUrl}${this.endpoints.GET_USER_TASKS_BY_ID.replace(':userId', id)}`;
+      console.log('TaskService: Request URL:', url);
+      console.log('TaskService: User ID:', id);
+      
+      const response = await fetch(url, {
         method: 'GET',
         headers,
+        cache: 'no-store', // Ensure fresh data
       });
       
       console.log('TaskService: Response status:', response.status);
-      console.log('TaskService: Response headers:', Object.fromEntries(response.headers.entries()));
       
       if (!response.ok) {
-        console.error('TaskService: HTTP error:', response.status, response.statusText);
+        const errorText = await response.text();
+        console.error('TaskService: HTTP error:', response.status, response.statusText, errorText);
+        throw new Error(`HTTP error! status: ${response.status}, message: ${errorText}`);
       }
       
       const data: any = await response.json();
       console.log("TaskService: Full response data:", data);
       
-      if (response.ok && data.success) {
+      if (data.success) {
         // Handle different response structures
         let tasks: Task[] = [];
         if (data.data && Array.isArray(data.data.tasks)) {
@@ -126,6 +137,10 @@ class TaskService {
       }
     } catch (error) {
       console.error('Error fetching tasks:', error);
+      if (error instanceof TypeError && error.message === 'Failed to fetch') {
+        console.error('TaskService: Network error - check CORS, API availability, or network connection');
+        throw new Error('Network error: Unable to reach the server. Please check your internet connection and try again.');
+      }
       throw error;
     }
   }
@@ -177,8 +192,6 @@ class TaskService {
     try {
       console.log('TaskService: Creating new task:', taskData);
       console.log('TaskService: Request URL:', `${this.baseUrl}${this.endpoints.CREATE}`);
-      const token = localStorage.getItem('authToken');
-      console.log('TaskService: Auth Token:', token); // Log the actual token value
       const headers = getAuthHeaders();
       console.log('TaskService: Auth Headers:', headers); // Log the full headers
       

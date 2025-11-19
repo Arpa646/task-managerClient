@@ -1,18 +1,20 @@
+'use client'
+
 import React from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useRouter } from 'next/navigation';
 import TaskForm from '../components/TaskForm';
 import { FaArrowLeft } from 'react-icons/fa';
 import { Task } from '../services';
 
 const CreateTask: React.FC = () => {
-  const navigate = useNavigate();
+  const router = useRouter();
 
   const handleCreateSuccess = (task?: Task) => {
     // Redirect to tasks page after successful creation
     if (task) {
       console.log("created task successfully", task);
     }
-    navigate('/tasks');
+    router.push('/tasks');
   };
 
   const handleCreateError = (error: Error) => {
@@ -27,7 +29,7 @@ const CreateTask: React.FC = () => {
           {/* Header */}
           <div className="flex items-center gap-4 mb-8">
             <button
-              onClick={() => navigate('/tasks')}
+              onClick={() => router.push('/tasks')}
               className="p-2 text-gray-600 hover:text-gray-800 hover:bg-gray-100 rounded-full transition-colors"
               title="Back to Tasks"
             >

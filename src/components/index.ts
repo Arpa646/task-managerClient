@@ -24,7 +24,6 @@ export { default as Modal } from './Modal';
 export { default as MyProgress } from './MyProgress';
 
 export { default as NewsletterSection } from './NewsletterSection';
-export { default as PrivateRoute } from './PrivateRoute';
 export { default as ProjectAnalytics } from './ProjectAnalytics';
 export { default as ProjectCard } from './ProjectCard';
 export { default as Sidebar } from './Sidebar';

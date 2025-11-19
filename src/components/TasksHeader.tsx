@@ -1,5 +1,7 @@
+'use client'
+
 import React from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useRouter } from 'next/navigation';
 import { FaPlus } from 'react-icons/fa';
 
 interface TasksHeaderProps {
@@ -11,7 +13,7 @@ const TasksHeader: React.FC<TasksHeaderProps> = ({
   title = "Task Manager", 
   description = "Organize, track, and complete your tasks efficiently" 
 }) => {
-  const navigate = useNavigate();
+  const router = useRouter();
 
   return (
     <div className="mb-8">
@@ -25,7 +27,7 @@ const TasksHeader: React.FC<TasksHeaderProps> = ({
             onClick={() => {
               console.log('TasksHeader: Add task button clicked');
               console.log('TasksHeader: Navigating to create task page');
-              navigate('/tasks/create');
+              router.push('/tasks/create');
             }}
             className="bg-gradient-to-r from-blue-600 to-indigo-600 text-white px-6 py-3 rounded-xl hover:from-blue-700 hover:to-indigo-700 transition-all duration-200 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 flex items-center gap-2 font-medium"
           >

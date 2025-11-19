@@ -1,27 +1,58 @@
+'use client'
+
 import React from 'react';
-import { useNavigate, useLocation } from 'react-router-dom';
+import { useRouter, useSearchParams } from 'next/navigation';
 import TaskForm from '../components/TaskForm';
 import { Task } from '../services/taskService';
 import { FaArrowLeft } from 'react-icons/fa';
 
 const UpdateTask: React.FC = () => {
-  const navigate = useNavigate();
-  const location = useLocation();
-  const task = location.state?.task as Task | null;
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const taskId = searchParams.get('taskId');
+  const [task, setTask] = React.useState<Task | null>(null);
+  const [loading, setLoading] = React.useState(true);
+
+  React.useEffect(() => {
+    // Get task from sessionStorage (set by TaskList component)
+    if (typeof window !== 'undefined') {
+      const storedTask = sessionStorage.getItem('editTask');
+      if (storedTask) {
+        try {
+          const parsedTask = JSON.parse(storedTask);
+          setTask(parsedTask);
+          // Clear sessionStorage after reading
+          sessionStorage.removeItem('editTask');
+        } catch (error) {
+          console.error('Error parsing task from sessionStorage:', error);
+        }
+      }
+    }
+    
+    if (!taskId && !task) {
+      router.push('/tasks');
+    }
+    setLoading(false);
+  }, [taskId, router]);
 
   const handleUpdateSuccess = () => {
-    // Redirect to tasks page after successful update
-    navigate('/tasks');
+    router.push('/tasks');
   };
 
   const handleUpdateError = (error: Error) => {
-    // You can add error handling here if needed
     console.error('Update error:', error);
   };
 
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-white flex items-center justify-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+      </div>
+    );
+  }
+
   // If no task data is provided, redirect back to tasks
   if (!task) {
-    navigate('/tasks');
     return null;
   }
 
@@ -32,7 +63,7 @@ const UpdateTask: React.FC = () => {
           {/* Header */}
           <div className="flex items-center gap-4 mb-8">
             <button
-              onClick={() => navigate('/tasks')}
+              onClick={() => router.push('/tasks')}
               className="p-2 text-gray-600 hover:text-gray-800 hover:bg-gray-100 rounded-full transition-colors"
               title="Back to Tasks"
             >

@@ -1,5 +1,7 @@
+'use client'
+
 import React, { useState, useEffect, useCallback } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useRouter } from 'next/navigation';
 import { getAuthUser } from '../utils/auth';
 import StatsCard from '../components/StatsCard';
 import ProjectAnalytics from '../components/ProjectAnalytics';
@@ -8,7 +10,7 @@ import { FaClipboardList, FaClock, FaCheckCircle, FaExclamationTriangle, FaCalen
 import { taskService, Task } from '../services/taskService';
 
 const Dashboard: React.FC = () => {
-  const navigate = useNavigate();
+  const router = useRouter();
   const user = getAuthUser();
   const [analyticsPeriod, setAnalyticsPeriod] = useState('this_month');
   const [tasks, setTasks] = useState<Task[]>([]);
@@ -18,12 +20,13 @@ const Dashboard: React.FC = () => {
   const fetchUserTasks = useCallback(async (userId: string) => {
     try {
       setLoading(true);
+      setError(null);
       const userTasks = await taskService.getUserTasks(userId);
       setTasks(userTasks as any);
-      setError(null);
     } catch (error) {
       console.error('Error fetching tasks:', error);
-      setError('Failed to fetch tasks');
+      const errorMessage = error instanceof Error ? error.message : 'Failed to fetch tasks';
+      setError(errorMessage);
     } finally {
       setLoading(false);
     }
@@ -126,7 +129,7 @@ const Dashboard: React.FC = () => {
             onClick={() => {
               console.log('TasksListHeader: Add task button clicked');
               console.log('TasksListHeader: Navigating to create task page');
-              navigate('/tasks/create');
+              router.push('/tasks/create');
             }}
             className="bg-gradient-to-r from-purple-600 to-indigo-600 text-white px-6 py-3 rounded-xl hover:from-purple-700 hover:to-indigo-700 transition-all duration-200 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 flex items-center gap-2 font-medium"
           >
@@ -232,7 +235,7 @@ const Dashboard: React.FC = () => {
               <h2 className="text-xl lg:text-2xl font-semibold text-gray-900 mb-6">Quick Actions</h2>
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                 <button 
-                  onClick={() => navigate('/tasks/create')}
+                  onClick={() => router.push('/tasks/create')}
                   className="bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white rounded-xl p-4 text-center transition-all duration-200 transform hover:scale-105 hover:shadow-lg"
                 >
                   <FaClipboardList className="text-2xl mx-auto mb-2" />
@@ -243,7 +246,7 @@ const Dashboard: React.FC = () => {
             onClick={() => {
               console.log('TasksListHeader: Add task button clicked');
               console.log('TasksListHeader: Navigating to create task page');
-              navigate('/tasks/create');
+              router.push('/tasks/create');
             }}
             className="bg-gradient-to-r from-purple-600 to-indigo-600 text-white px-6 py-3 rounded-xl hover:from-purple-700 hover:to-indigo-700 transition-all duration-200 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 flex items-center gap-2 font-medium"
           >
@@ -253,14 +256,14 @@ const Dashboard: React.FC = () => {
         </div>
         
                 <button 
-                  onClick={() => navigate('/tasks')}
+                  onClick={() => router.push('/tasks')}
                   className="bg-gradient-to-r from-purple-500 to-purple-600 hover:from-purple-600 hover:to-purple-700 text-white rounded-xl p-4 text-center transition-all duration-200 transform hover:scale-105 hover:shadow-lg"
                 >
                   <FaChartLine className="text-2xl mx-auto mb-2" />
                   <div className="font-medium">View Reports</div>
                 </button>
                 <button 
-                  onClick={() => navigate('/tasks')}
+                  onClick={() => router.push('/tasks')}
                   className="bg-gradient-to-r from-indigo-500 to-indigo-600 hover:from-indigo-600 hover:to-indigo-700 text-white rounded-xl p-4 text-center transition-all duration-200 transform hover:scale-105 hover:shadow-lg"
                 >
                   <FaClock className="text-2xl mx-auto mb-2" />

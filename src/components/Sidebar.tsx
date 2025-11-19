@@ -1,7 +1,12 @@
+'use client'
+
 import React, { useState, useEffect } from 'react';
-import { Link, useLocation } from 'react-router-dom';
+import Link from 'next/link';
+import { usePathname } from 'next/navigation';
 import { FaTasks, FaHome, FaUser, FaSignOutAlt, FaCog, FaChartBar, FaBars, FaTimes } from 'react-icons/fa';
-import { User } from '../App';
+import { AuthUser } from '../utils/auth';
+
+type User = AuthUser;
 
 interface SidebarProps {
   isOpen: boolean;
@@ -11,11 +16,11 @@ interface SidebarProps {
 }
 
 const Sidebar: React.FC<SidebarProps> = ({ isOpen, onToggle, user, onLogout }) => {
-  const location = useLocation();
+  const pathname = usePathname();
   const [isProfileOpen, setIsProfileOpen] = useState(false);
 
   const isActive = (path: string) => {
-    return location.pathname === path;
+    return pathname === path;
   };
 
   const handleLogout = () => {
@@ -155,7 +160,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onToggle, user, onLogout }) =
             <ul className="space-y-2">
               <li>
                 <Link
-                  to="/dashboard"
+                  href="/dashboard"
                   className={`group flex items-center space-x-3 lg:space-x-4 px-3 lg:px-4 py-3 lg:py-4 text-sm font-medium rounded-xl transition-all duration-300 ${
                     isActive('/dashboard')
                       ? 'bg-gradient-to-r from-purple-600/20 to-pink-600/20 border border-purple-500/30 text-purple-300 shadow-lg shadow-purple-500/20'
@@ -177,7 +182,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onToggle, user, onLogout }) =
               </li>
               <li>
                 <Link
-                  to="/tasks"
+                  href="/tasks"
                   className={`group flex items-center space-x-3 lg:space-x-4 px-3 lg:px-4 py-3 lg:py-4 text-sm font-medium rounded-xl transition-all duration-300 ${
                     isActive('/tasks')
                       ? 'bg-gradient-to-r from-purple-600/20 to-pink-600/20 border border-purple-500/30 text-purple-300 shadow-lg shadow-purple-500/20'
@@ -199,7 +204,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onToggle, user, onLogout }) =
               </li>
               <li>
                 <Link
-                  to="/analytics"
+                  href="/analytics"
                   className={`group flex items-center space-x-3 lg:space-x-4 px-3 lg:px-4 py-3 lg:py-4 text-sm font-medium rounded-xl transition-all duration-300 text-slate-300 hover:bg-slate-700/50 hover:text-white hover:shadow-lg`}
                 >
                   <div className="p-2 rounded-lg transition-all duration-300 bg-slate-700/50 text-slate-400 group-hover:bg-gradient-to-br group-hover:from-blue-500 group-hover:to-cyan-500 group-hover:text-white">
@@ -243,7 +248,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onToggle, user, onLogout }) =
             </button>
           ) : (
             <Link
-              to="/login"
+              href="/login"
               className="group w-full flex items-center space-x-3 lg:space-x-4 px-3 lg:px-4 py-3 lg:py-4 text-sm font-medium rounded-xl transition-all duration-300 text-slate-300 hover:bg-gradient-to-r hover:from-purple-600/20 hover:to-indigo-600/20 hover:text-purple-300 hover:shadow-lg"
             >
               <div className="p-2 rounded-lg transition-all duration-300 bg-slate-700/50 text-slate-400 group-hover:bg-gradient-to-br group-hover:from-purple-500 group-hover:to-indigo-500 group-hover:text-white">

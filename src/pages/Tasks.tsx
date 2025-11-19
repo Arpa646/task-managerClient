@@ -1,8 +1,10 @@
+'use client'
+
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useRouter } from 'next/navigation';
 import TaskList from '../components/TaskList';
 import { taskService, Task } from '../services/taskService';
-import { isAuthenticated } from '../utils/auth';
+import { isAuthenticated, getAuthUser, getAuthToken } from '../utils/auth';
 import { 
   TasksHeader,
   TasksStats,
@@ -16,7 +18,7 @@ import {
 
 const Tasks: React.FC = () => {
   console.log('Tasks component: Component function called');
-  const navigate = useNavigate();
+  const router = useRouter();
 
   const [searchQuery, setSearchQuery] = useState('');
   const [dateRange] = useState('26 Jul 25 - 24 Aug 25');
@@ -81,21 +83,18 @@ const Tasks: React.FC = () => {
           throw new Error('User not authenticated');
         }
         
-        const authToken = localStorage.getItem('authToken');
-        const currentUser = localStorage.getItem('user');
+        const user = getAuthUser();
+        const authToken = getAuthToken();
         console.log('Auth token exists:', !!authToken);
-        console.log('Current user from localStorage:', currentUser);
+        console.log('Current user:', user);
         
         if (!authToken) {
           throw new Error('Authentication token not found');
         }
         
-        if (!currentUser) {
+        if (!user) {
           throw new Error('User not found');
         }
-        
-        const user = JSON.parse(currentUser);
-        console.log('Parsed user:', user);
         if (!user._id) {
           throw new Error('User ID not found');
         }
@@ -110,7 +109,7 @@ const Tasks: React.FC = () => {
         
         if (errorMessage.includes('not authenticated') || errorMessage.includes('Authentication token not found')) {
           console.log('Redirecting to login page...');
-          navigate('/login');
+          router.push('/login');
           return;
         }
         

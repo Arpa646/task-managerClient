@@ -277,16 +277,14 @@ console.log("userTask",userTasks)
             <TasksHeader />
 
             {/* Success Message */}
-            {successMessage && (
+            {/* {successMessage && (
               <TasksSuccessMessage 
                 message={successMessage} 
                 onClose={() => setSuccessMessage(null)} 
               />
-            )}
+            )} */}
 
-            {/* Stats Cards */}
-            <TasksStats stats={stats} />
-
+        
             {/* Search and Filters */}
             <TasksFilters
               searchQuery={searchQuery}

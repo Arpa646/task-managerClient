@@ -23,11 +23,14 @@ const TaskForm: React.FC<TaskFormProps> = ({ task, onComplete, onError }) => {
 
   useEffect(() => {
     if (task) {
-      setTitle(task.title);
-      setDescription(task.description);
-      setDueDate(task.dueDate.split('T')[0]);
-      setPriority(task.priority);
-      setStatus(task.status);
+      setTitle(task.title ?? '');
+      setDescription(task.description ?? '');
+      // Guard against missing or undefined dueDate coming from the task
+      const rawDue = task.dueDate ?? '';
+      const safeDue = rawDue ? String(rawDue).split('T')[0] : '';
+      setDueDate(safeDue);
+      setPriority((task.priority as 'low' | 'medium' | 'high') ?? 'medium');
+      setStatus((task.status as 'todo' | 'in-progress' | 'completed') ?? 'todo');
     }
   }, [task]);
 
@@ -83,7 +86,10 @@ const TaskForm: React.FC<TaskFormProps> = ({ task, onComplete, onError }) => {
         }
       } else {
         try {
-          const updatedTask = await taskService.updateTask(task._id, taskData);
+
+        
+          const rawId = (task as any)._id ?? task.id;
+          const updatedTask = await taskService.updateTask(rawId, taskData);
           onComplete?.(updatedTask);
         } catch (error) {
           onError?.(error instanceof Error ? error : new Error('Failed to update task'));

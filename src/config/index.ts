@@ -23,8 +23,8 @@ export const API_CONFIG = {
       GET_USER_TASKS: '/api/todos/',
       GET_USER_TASKS_BY_ID: '/api/todos/',
       CREATE: '/api/todos/',
-      UPDATE: '/api/todos/',
-      DELETE: '/api/todos/',
+      UPDATE: '/api/todos',
+      DELETE: '/api/todos',
       SEARCH: '/api/todos/search'
     }
   }

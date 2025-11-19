@@ -7,12 +7,18 @@ interface TaskMetaProps {
 }
 
 const TaskMeta: React.FC<TaskMetaProps> = ({ task }) => {
-  const isOverdue = (dueDate: string) => {
-    return new Date(dueDate) < new Date();
+  const isOverdue = (dueDate?: string) => {
+    if (!dueDate) return false;
+    const d = new Date(dueDate);
+    if (Number.isNaN(d.getTime())) return false;
+    return d < new Date();
   };
 
-  const formatDate = (dateString: string) => {
+  const formatDate = (dateString?: string) => {
+    if (!dateString) return 'No due date';
     const date = new Date(dateString);
+    if (Number.isNaN(date.getTime())) return 'Invalid date';
+
     const today = new Date();
     const tomorrow = new Date(today);
     tomorrow.setDate(tomorrow.getDate() + 1);
@@ -22,11 +28,9 @@ const TaskMeta: React.FC<TaskMetaProps> = ({ task }) => {
     } else if (date.toDateString() === tomorrow.toDateString()) {
       return 'Tomorrow';
     } else {
-      return date.toLocaleDateString('en-US', { 
-        month: 'short', 
-        day: 'numeric',
-        year: date.getFullYear() !== today.getFullYear() ? 'numeric' : undefined
-      });
+      const opts: Intl.DateTimeFormatOptions = { month: 'short', day: 'numeric' };
+      if (date.getFullYear() !== today.getFullYear()) opts.year = 'numeric';
+      return date.toLocaleDateString('en-US', opts);
     }
   };
 
@@ -39,7 +43,7 @@ const TaskMeta: React.FC<TaskMetaProps> = ({ task }) => {
           : 'text-gray-500'
       }`}>
         <FaCalendarAlt className="w-3.5 h-3.5" />
-        <span>{formatDate(task.dueDate)}</span>
+        <span> due {formatDate(task.todo_date)}</span>
         {isOverdue(task.dueDate) && task.status !== 'completed' && (
           <span className="text-xs bg-red-100 text-red-700 px-2 py-0.5 rounded-full">
             Overdue
@@ -47,11 +51,7 @@ const TaskMeta: React.FC<TaskMetaProps> = ({ task }) => {
         )}
       </div>
 
-      {/* Created Date */}
-      <div className="flex items-center gap-1.5 text-gray-400">
-        <FaUser className="w-3.5 h-3.5" />
-        <span>Created {new Date(task.createdAt).toLocaleDateString()}</span>
-      </div>
+      {/* (created date removed - only showing due date) */}
     </div>
   );
 };

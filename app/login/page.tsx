@@ -9,91 +9,59 @@ import { setAuth, AuthUser, getRedirectUrl, clearRedirectUrl } from '@/src/utils
 
 export default function LoginPage() {
   const router = useRouter()
-  const [formData, setFormData] = useState({
-    email: '',
-    password: ''
-  })
+  const [formData, setFormData] = useState({ email: '', password: '' })
   const [errors, setErrors] = useState<Record<string, string>>({})
   const [showPassword, setShowPassword] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
 
   const validateForm = () => {
     const newErrors: Record<string, string> = {}
-
-    if (!formData.email) {
-      newErrors.email = 'Email is required'
-    } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
-      newErrors.email = 'Email is invalid'
-    }
-
-    if (!formData.password) {
-      newErrors.password = 'Password is required'
-    } else if (formData.password.length < 6) {
-      newErrors.password = 'Password must be at least 6 characters'
-    }
-
+    if (!formData.email) newErrors.email = 'Email is required'
+    else if (!/\S+@\S+\.\S+/.test(formData.email)) newErrors.email = 'Email is invalid'
+    if (!formData.password) newErrors.password = 'Password is required'
+    else if (formData.password.length < 6) newErrors.password = 'Password must be at least 6 characters'
     setErrors(newErrors)
     return Object.keys(newErrors).length === 0
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    
     if (!validateForm()) return
-
     setIsLoading(true)
     setErrors({})
-    
     try {
-      console.log('Attempting login with:', { email: formData.email })
-      
-      // Create FormData for the request
       const formDataToSend = new FormData()
       formDataToSend.append('email', formData.email)
       formDataToSend.append('password', formData.password)
-
       const response = await fetch(`${API_CONFIG.BASE_URL}${API_CONFIG.ENDPOINTS.AUTH.LOGIN}`, {
         method: 'POST',
         body: formDataToSend
-        // Don't set Content-Type header - browser will set it automatically with boundary for FormData
       })
-
-      console.log('Login response status:', response.status)
       const data = await response.json()
-      console.log('Login response data:', data)
-
       if (response.ok) {
-        // Handle response - adjust based on actual API response structure
         const token = data.token || data.access || data.access_token
         const user = data.user || data.data || {
           _id: data.id || data.user_id,
           name: data.name || data.first_name + ' ' + data.last_name || '',
           email: formData.email
         }
-        
         if (token && user) {
           setAuth(token, user)
-          
           const redirectUrl = getRedirectUrl()
           if (redirectUrl) {
-            console.log('Login successful, redirecting to:', redirectUrl)
             clearRedirectUrl()
             router.push(redirectUrl)
           } else {
-            console.log('Login successful, navigating to dashboard')
-            router.push('/dashboard')
+            router.push('/tasks')
           }
         } else {
-          console.error('Login response missing token or user data:', data)
           setErrors({ general: 'Invalid response from server. Please try again.' })
         }
       } else {
         const errorMessage = data.message || data.error || data.detail || 'Login failed. Please try again.'
-        console.error('Login failed with status:', response.status, data)
         setErrors({ general: errorMessage })
       }
     } catch (error) {
-      console.error('Login error:', error)
       setErrors({ general: 'Network error. Please check your connection and try again.' })
     } finally {
       setIsLoading(false)
@@ -103,58 +71,60 @@ export default function LoginPage() {
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target
     setFormData(prev => ({ ...prev, [name]: value }))
-    
-    if (errors[name]) {
-      setErrors(prev => ({ ...prev, [name]: '' }))
-    }
+    if (errors[name]) setErrors(prev => ({ ...prev, [name]: '' }))
   }
 
   return (
-    <div className="min-h-screen bg-black flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-md w-full space-y-8">
-        <div className="bg-gray-900/80 rounded-2xl shadow-2xl p-8 border border-gray-700 backdrop-blur-sm">
-          <div className="text-center mb-8">
-            <div className="flex items-center justify-center space-x-2 mb-4">
-              <div className="bg-gradient-to-br from-purple-600 to-indigo-600 p-3 rounded-lg shadow-lg">
-                <CalendarIcon className="h-8 w-8 text-white" />
-              </div>
-              <span className="text-2xl font-bold text-white">Task Manager</span>
+    <div className="min-h-screen bg-white flex items-center justify-center">
+      <div className="flex w-full max-w-4xl shadow-2xl rounded-2xl overflow-hidden border border-gray-200">
+        {/* Left illustration panel */}
+        <div className="hidden md:flex flex-col justify-center items-center bg-blue-50 w-1/2 p-10 relative">
+          <div className="flex flex-col items-center">
+            {/* SVG illustration matching Figma style */}
+            <svg width="260" height="220" viewBox="0 0 260 220" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <rect x="30" y="40" width="200" height="140" rx="20" fill="#E0E7FF" />
+              <rect x="70" y="70" width="120" height="80" rx="12" fill="#6366F1" />
+              <rect x="90" y="90" width="80" height="40" rx="8" fill="#A5B4FC" />
+              <circle cx="160" cy="110" r="16" fill="#F59E42" />
+              <rect x="110" y="120" width="40" height="10" rx="5" fill="#6366F1" />
+              <rect x="110" y="135" width="40" height="10" rx="5" fill="#6366F1" />
+              {/* Add more shapes for detail if needed */}
+            </svg>
+            <div className="mt-8 text-center">
+              <h2 className="text-2xl font-bold text-blue-900 mb-2">Login</h2>
+              <p className="text-blue-700">Start managing your tasks efficiently</p>
             </div>
-            <h2 className="text-3xl font-bold text-white">Welcome Back</h2>
-            <p className="text-gray-300 mt-2">Sign in to your account to continue</p>
           </div>
-
+        </div>
+        {/* Right form panel */}
+        <div className="w-full md:w-1/2 bg-white flex flex-col justify-center p-10">
+          <div className="mb-8 text-center">
+            <h2 className="text-3xl font-bold text-gray-900">Log in to your account</h2>
+            <p className="text-gray-500 mt-2">Start managing your tasks efficiently</p>
+          </div>
           {errors.general && (
-            <div className="mb-4 p-4 bg-red-900/30 border border-red-700 rounded-lg backdrop-blur-sm">
-              <p className="text-sm text-red-300">{errors.general}</p>
+            <div className="mb-4 p-4 bg-red-100 border border-red-400 rounded-lg">
+              <p className="text-sm text-red-600">{errors.general}</p>
             </div>
           )}
-
           <form onSubmit={handleSubmit} className="space-y-6">
             <div>
-              <label htmlFor="email" className="block text-sm font-medium text-gray-300 mb-2">
-                Email Address
-              </label>
+              <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-2">Email</label>
               <input
                 id="email"
                 name="email"
                 type="email"
                 value={formData.email}
                 onChange={handleChange}
-                className={`w-full px-4 py-3 bg-gray-800 border rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-all duration-200 text-white placeholder-gray-400 ${
-                  errors.email ? 'border-red-500' : 'border-gray-600'
-                }`}
+                className={`w-full px-4 py-3 bg-gray-50 border rounded-lg focus:ring-2 focus:ring-blue-400 focus:border-blue-400 transition-all duration-200 text-gray-900 placeholder-gray-400 ${errors.email ? 'border-red-500' : 'border-gray-300'}`}
                 placeholder="Enter your email"
               />
               {errors.email && (
-                <p className="mt-2 text-sm text-red-300">{errors.email}</p>
+                <p className="mt-2 text-sm text-red-600">{errors.email}</p>
               )}
             </div>
-
             <div>
-              <label htmlFor="password" className="block text-sm font-medium text-gray-300 mb-2">
-                Password
-              </label>
+              <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-2">Password</label>
               <div className="relative">
                 <input
                   id="password"
@@ -162,9 +132,7 @@ export default function LoginPage() {
                   type={showPassword ? 'text' : 'password'}
                   value={formData.password}
                   onChange={handleChange}
-                  className={`w-full px-4 py-3 bg-gray-800 border rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-all duration-200 pr-12 text-white placeholder-gray-400 ${
-                    errors.password ? 'border-red-500' : 'border-gray-600'
-                  }`}
+                  className={`w-full px-4 py-3 bg-gray-50 border rounded-lg focus:ring-2 focus:ring-blue-400 focus:border-blue-400 transition-all duration-200 pr-12 text-gray-900 placeholder-gray-400 ${errors.password ? 'border-red-500' : 'border-gray-300'}`}
                   placeholder="Enter your password"
                 />
                 <button
@@ -173,42 +141,42 @@ export default function LoginPage() {
                   className="absolute inset-y-0 right-0 pr-3 flex items-center"
                 >
                   {showPassword ? (
-                    <EyeSlashIcon className="h-5 w-5 text-gray-400 hover:text-white transition-colors" />
+                    <EyeSlashIcon className="h-5 w-5 text-gray-400 hover:text-blue-600 transition-colors" />
                   ) : (
-                    <EyeIcon className="h-5 w-5 text-gray-400 hover:text-white transition-colors" />
+                    <EyeIcon className="h-5 w-5 text-gray-400 hover:text-blue-600 transition-colors" />
                   )}
                 </button>
               </div>
               {errors.password && (
-                <p className="mt-2 text-sm text-red-300">{errors.password}</p>
+                <p className="mt-2 text-sm text-red-600">{errors.password}</p>
               )}
             </div>
-
+            <div className="flex items-center justify-between">
+              <label className="flex items-center gap-2 text-sm text-gray-600">
+                <input type="checkbox" className="form-checkbox h-4 w-4 text-blue-600" />
+                Remember me
+              </label>
+              <Link href="#" className="text-sm text-blue-600 hover:underline">Forgot your password?</Link>
+            </div>
             <button
               type="submit"
               disabled={isLoading}
-              className="w-full bg-gradient-to-r from-purple-600 to-indigo-600 text-white py-3 px-4 rounded-lg font-semibold hover:from-purple-700 hover:to-indigo-700 focus:ring-4 focus:ring-purple-300/50 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed shadow-lg hover:shadow-xl transform hover:scale-105"
+              className="w-full bg-blue-600 text-white py-3 px-4 rounded-lg font-semibold hover:bg-blue-700 focus:ring-4 focus:ring-blue-300 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed shadow-lg hover:shadow-xl"
             >
               {isLoading ? (
                 <div className="flex items-center justify-center space-x-2">
                   <div className="animate-spin rounded-full h-5 w-5 border-t-2 border-white"></div>
-                  <span>Signing In...</span>
+                  <span>Log In...</span>
                 </div>
               ) : (
-                'Sign In'
+                'Log In'
               )}
             </button>
           </form>
-
           <div className="mt-8 text-center">
-            <p className="text-gray-300">
+            <p className="text-gray-600">
               Don't have an account?{' '}
-              <Link 
-                href="/register" 
-                className="text-purple-400 font-semibold hover:text-purple-300 transition-colors"
-              >
-                Sign up here
-              </Link>
+              <Link href="/register" className="text-blue-600 font-semibold hover:text-blue-500 transition-colors">Register now</Link>
             </p>
           </div>
         </div>

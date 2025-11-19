@@ -9,7 +9,9 @@ interface TaskActionsProps {
 }
 
 const TaskActions: React.FC<TaskActionsProps> = ({ task, onDelete, onUpdate }) => {
-  const isDisabled = task._id.startsWith('temp-');
+  const rawId = (task as any)._id ?? (task as any).id ?? '';
+  const isDisabled = String(rawId).toString().startsWith('temp-');
+  console.log('TaskActions id:', rawId);
 
   return (
     <div className="flex items-center gap-2">
@@ -24,7 +26,7 @@ const TaskActions: React.FC<TaskActionsProps> = ({ task, onDelete, onUpdate }) =
       
       {onDelete && (
         <button
-          onClick={() => onDelete(task._id)}
+          onClick={() => onDelete(String(rawId))}
           className="p-2.5 text-gray-400 hover:text-red-600 hover:bg-red-50 transition-all duration-200 rounded-lg"
           title="Delete task"
           disabled={isDisabled}

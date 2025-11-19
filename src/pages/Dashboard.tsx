@@ -1,275 +1,139 @@
-'use client'
+"use client"
 
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { getAuthUser } from '../utils/auth';
-import StatsCard from '../components/StatsCard';
-import ProjectAnalytics from '../components/ProjectAnalytics';
-import MyProgress from '../components/MyProgress';
-import { FaClipboardList, FaClock, FaCheckCircle, FaExclamationTriangle, FaCalendarAlt, FaChartLine, FaPlus } from 'react-icons/fa';
-import { taskService, Task } from '../services/taskService';
+import { isAuthenticated, getAuthUser } from '../utils/auth';
 
 const Dashboard: React.FC = () => {
   const router = useRouter();
-  const user = getAuthUser();
-  const [analyticsPeriod, setAnalyticsPeriod] = useState('this_month');
-  const [tasks, setTasks] = useState<Task[]>([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const [user, setUser] = useState<any>(null);
 
-  const fetchUserTasks = useCallback(async () => {
-    try {
-      setLoading(true);
-      setError(null);
-      const userTasks = await taskService.getUserTasks();
-      setTasks(userTasks as any);
-    } catch (error) {
-      console.error('Error fetching tasks:', error);
-      const errorMessage = error instanceof Error ? error.message : 'Failed to fetch tasks';
-      setError(errorMessage);
-    } finally {
-      setLoading(false);
-    }
-  }, []);
+  const [firstName, setFirstName] = useState('');
+  const [lastName, setLastName] = useState('');
+  const [email, setEmail] = useState('');
+  const [address, setAddress] = useState('');
+  const [contactNumber, setContactNumber] = useState('');
+  const [birthday, setBirthday] = useState('');
+  const [photoPreview, setPhotoPreview] = useState<string | null>(null);
+  const [saving, setSaving] = useState(false);
 
   useEffect(() => {
-    if (user?._id) {
-      fetchUserTasks();
-    } else {
+    const init = () => {
+      if (!isAuthenticated()) {
+        router.push('/login');
+        return;
+      }
+      const u = getAuthUser();
+      setUser(u);
+      setFirstName(u?.firstName || u?.name?.split(' ')[0] || '');
+      setLastName(u?.lastName || u?.name?.split(' ').slice(1).join(' ') || '');
+      setEmail(u?.email || '');
+      setAddress(u?.address || '');
+      setContactNumber(u?.contactNumber || '');
+      setBirthday(u?.birthday || '');
+      setPhotoPreview(u?.photoURL || null);
       setLoading(false);
+    };
+
+    init();
+  }, []);
+
+  const onPhotoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files && e.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = () => setPhotoPreview(String(reader.result));
+    reader.readAsDataURL(file);
+  };
+
+  const onSave = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setSaving(true);
+    try {
+      // TODO: call API to update account info. For now, log and update local state.
+      console.log('Saving account', { firstName, lastName, email, address, contactNumber, birthday });
+      // Simulate save delay
+      await new Promise(res => setTimeout(res, 700));
+      setSaving(false);
+      alert('Account information saved (client-side only)');
+    } catch (err) {
+      console.error('Save account error', err);
+      setSaving(false);
+      alert('Failed to save account information');
     }
-  }, [user?._id, fetchUserTasks]);
+  };
 
-  // Calculate statistics from real task data
-  const totalTasks = tasks.length;
-  const inProgressTasks = tasks.filter(task => task.status === 'in-progress').length;
-  const completedTasks = tasks.filter(task => task.status === 'completed').length;
-  const todoTasks = tasks.filter(task => task.status === 'todo').length;
-  
-  // Calculate overdue tasks (tasks with due date in the past and not completed)
-  const overdueTasks = tasks.filter(task => {
-    if (task.status === 'completed') return false;
-    const dueDate = new Date(task.dueDate);
-    const today = new Date();
-    return dueDate < today;
-  }).length;
-
-  // Calculate progress percentages
-  const totalProgress = totalTasks > 0 ? (completedTasks / totalTasks) * 100 : 0;
-  const inProgressProgress = totalTasks > 0 ? (inProgressTasks / totalTasks) * 100 : 0;
-  const notStartedProgress = totalTasks > 0 ? (todoTasks / totalTasks) * 100 : 0;
-
-  if (loading) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 flex">
-        <div className="flex-1 transition-all duration-300">
-          <div className="p-4 sm:p-6 lg:p-8">
-            <div className="flex items-center justify-center h-64">
-              <div className="text-center">
-                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
-                <div className="text-gray-600 text-lg font-medium">Loading your dashboard...</div>
-                <div className="text-gray-400 text-sm mt-2">Preparing your task insights</div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    );
-  }
-
-  if (error) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 flex">
-        <div className="flex-1 transition-all duration-300">
-          <div className="p-4 sm:p-6 lg:p-8">
-            <div className="bg-red-50 border border-red-200 rounded-xl p-6 shadow-sm">
-              <div className="flex items-center">
-                <FaExclamationTriangle className="text-red-500 text-xl mr-3" />
-                <div className="text-red-800 font-medium">{error}</div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    );
-  }
+  if (loading) return <div className="p-6">Loading account...</div>;
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 via-blue-50 to-indigo-50">
-      <div className="flex-1 transition-all duration-300">
-        <div className="p-4 sm:p-6 lg:p-8">
-          {/* Header Section with enhanced design */}
-          <div className="mb-8 lg:mb-12">
-            <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 lg:p-8">
-              <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between">
-                <div>
-                  <h1 className="text-2xl lg:text-4xl font-bold bg-gradient-to-r from-gray-900 via-blue-800 to-indigo-800 bg-clip-text text-transparent">
-                    Welcome back, {user?.name || 'User'}! 👋
-                  </h1>
-                  <p className="text-gray-600 mt-2 lg:mt-3 text-base lg:text-lg">
-                    Here's what's happening with your tasks today.
-                  </p>
-                  <div className="flex items-center mt-3 text-sm text-gray-500">
-                    <FaCalendarAlt className="mr-2" />
-                    <span>{new Date().toLocaleDateString('en-US', { 
-                      weekday: 'long', 
-                      year: 'numeric', 
-                      month: 'long', 
-                      day: 'numeric' 
-                    })}</span>
-                  </div>
-                </div>
-                <div className="mt-4 lg:mt-0 flex flex-col gap-3">
-                  <div className="bg-gradient-to-r from-blue-500 to-indigo-600 rounded-xl p-4 text-white text-center">
-                    <div className="text-2xl font-bold">{totalTasks}</div>
-                    <div className="text-blue-100 text-sm">Total Tasks</div>
-                  </div>
-                  <div className="flex-1 flex justify-center">
-          <button
-            onClick={() => {
-              console.log('TasksListHeader: Add task button clicked');
-              console.log('TasksListHeader: Navigating to create task page');
-              router.push('/tasks/create');
-            }}
-            className="bg-gradient-to-r from-purple-600 to-indigo-600 text-white px-6 py-3 rounded-xl hover:from-purple-700 hover:to-indigo-700 transition-all duration-200 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 flex items-center gap-2 font-medium"
-          >
-            <FaPlus className="w-4 h-4" />
-            Add New Task
-          </button>
-        </div>
-        
-                </div>
-              </div>
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-indigo-50">
+      <div className="container mx-auto px-4 py-6">
+        <div className="max-w-7xl mx-auto bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+          <div className="p-6">
+            <div className="flex items-center justify-between mb-6">
+              <h1 className="text-2xl font-semibold text-slate-800">Account Information</h1>
+              <div className="text-sm text-slate-500">Friday 07/11/2025</div>
             </div>
-          </div>
 
-          {/* Enhanced Stats Section */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6 mb-8 lg:mb-12">
-            <StatsCard
-              title="Total Tasks"
-              value={totalTasks}
-              change={0}
-              icon={FaClipboardList}
-              iconBgColor="bg-gradient-to-r from-blue-500 to-blue-600"
-            />
-            <StatsCard
-              title="In Progress"
-              value={inProgressTasks}
-              change={0}
-              icon={FaClock}
-              iconBgColor="bg-gradient-to-r from-yellow-500 to-orange-500"
-            />
-            <StatsCard
-              title="Completed"
-              value={completedTasks}
-              change={0}
-              icon={FaCheckCircle}
-              iconBgColor="bg-gradient-to-r from-green-500 to-emerald-600"
-            />
-            <StatsCard
-              title="Overdue"
-              value={overdueTasks}
-              change={0}
-              icon={FaExclamationTriangle}
-              iconBgColor="bg-gradient-to-r from-red-500 to-pink-600"
-            />
-          </div>
-
-          {/* Enhanced Task Summary Section */}
-          <div className="mb-8 lg:mb-12">
-            <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 lg:p-8">
-              <div className="flex items-center mb-6">
-                <FaChartLine className="text-blue-600 text-xl mr-3" />
-                <h2 className="text-xl lg:text-2xl font-semibold text-gray-900">Task Summary</h2>
-              </div>
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 lg:gap-8">
-                <div className="text-center group">
-                  <div className="bg-blue-50 rounded-xl p-4 lg:p-6 group-hover:bg-blue-100 transition-colors duration-200">
-                    <div className="text-3xl lg:text-4xl font-bold text-blue-600 mb-2">{todoTasks}</div>
-                    <div className="text-sm lg:text-base text-gray-600 font-medium">To Do</div>
-                    <div className="text-xs text-gray-400 mt-1">Pending tasks</div>
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+              <div className="col-span-1 bg-slate-50 p-6 rounded-lg border border-slate-100">
+                <div className="flex flex-col items-center">
+                  <div className="w-28 h-28 rounded-full bg-gray-200 overflow-hidden border-2 border-slate-200 mb-4">
+                    {photoPreview ? (
+                      <img src={photoPreview} alt="profile" className="w-full h-full object-cover" />
+                    ) : (
+                      <div className="w-full h-full flex items-center justify-center text-slate-400">No Photo</div>
+                    )}
                   </div>
-                </div>
-                <div className="text-center group">
-                  <div className="bg-yellow-50 rounded-xl p-4 lg:p-6 group-hover:bg-yellow-100 transition-colors duration-200">
-                    <div className="text-3xl lg:text-4xl font-bold text-yellow-600 mb-2">{inProgressTasks}</div>
-                    <div className="text-sm lg:text-base text-gray-600 font-medium">In Progress</div>
-                    <div className="text-xs text-gray-400 mt-1">Active work</div>
-                  </div>
-                </div>
-                <div className="text-center group">
-                  <div className="bg-green-50 rounded-xl p-4 lg:p-6 group-hover:bg-green-100 transition-colors duration-200">
-                    <div className="text-3xl lg:text-4xl font-bold text-green-600 mb-2">{completedTasks}</div>
-                    <div className="text-sm lg:text-base text-gray-600 font-medium">Completed</div>
-                    <div className="text-xs text-gray-400 mt-1">Finished tasks</div>
-                  </div>
+                  <label className="inline-flex items-center space-x-2">
+                    <input type="file" accept="image/*" onChange={onPhotoChange} />
+                  </label>
                 </div>
               </div>
-            </div>
-          </div>
 
-          {/* Enhanced Analytics and Progress Section */}
-          <div className="grid grid-cols-1 xl:grid-cols-3 gap-6 lg:gap-8">
-            <div className="xl:col-span-2">
-              <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 lg:p-8">
-                <ProjectAnalytics
-                  period={analyticsPeriod}
-                  onPeriodChange={setAnalyticsPeriod}
-                />
-              </div>
-            </div>
-            <div className="xl:col-span-1">
-              <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 lg:p-8 h-full">
-                <MyProgress
-                  completed={Math.round(totalProgress)}
-                  inProgress={Math.round(inProgressProgress)}
-                  notStarted={Math.round(notStartedProgress)}
-                />
-              </div>
-            </div>
-          </div>
+              <form onSubmit={onSave} className="col-span-2">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                  <div>
+                    <label className="block text-sm text-slate-600 mb-1">First Name</label>
+                    <input value={firstName} onChange={e => setFirstName(e.target.value)} className="w-full px-3 py-2 border rounded-md" />
+                  </div>
+                  <div>
+                    <label className="block text-sm text-slate-600 mb-1">Last Name</label>
+                    <input value={lastName} onChange={e => setLastName(e.target.value)} className="w-full px-3 py-2 border rounded-md" />
+                  </div>
+                </div>
 
-          {/* Quick Actions Section */}
-          <div className="mt-8 lg:mt-12">
-            <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 lg:p-8">
-              <h2 className="text-xl lg:text-2xl font-semibold text-gray-900 mb-6">Quick Actions</h2>
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                <button 
-                  onClick={() => router.push('/tasks/create')}
-                  className="bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white rounded-xl p-4 text-center transition-all duration-200 transform hover:scale-105 hover:shadow-lg"
-                >
-                  <FaClipboardList className="text-2xl mx-auto mb-2" />
-                  <div className="font-medium">Add Task</div>
-                </button>
-                <div className="flex-1 flex justify-center">
-          <button
-            onClick={() => {
-              console.log('TasksListHeader: Add task button clicked');
-              console.log('TasksListHeader: Navigating to create task page');
-              router.push('/tasks/create');
-            }}
-            className="bg-gradient-to-r from-purple-600 to-indigo-600 text-white px-6 py-3 rounded-xl hover:from-purple-700 hover:to-indigo-700 transition-all duration-200 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 flex items-center gap-2 font-medium"
-          >
-            <FaPlus className="w-4 h-4" />
-            Add New Task
-          </button>
-        </div>
-        
-                <button 
-                  onClick={() => router.push('/tasks')}
-                  className="bg-gradient-to-r from-purple-500 to-purple-600 hover:from-purple-600 hover:to-purple-700 text-white rounded-xl p-4 text-center transition-all duration-200 transform hover:scale-105 hover:shadow-lg"
-                >
-                  <FaChartLine className="text-2xl mx-auto mb-2" />
-                  <div className="font-medium">View Reports</div>
-                </button>
-                <button 
-                  onClick={() => router.push('/tasks')}
-                  className="bg-gradient-to-r from-indigo-500 to-indigo-600 hover:from-indigo-600 hover:to-indigo-700 text-white rounded-xl p-4 text-center transition-all duration-200 transform hover:scale-105 hover:shadow-lg"
-                >
-                  <FaClock className="text-2xl mx-auto mb-2" />
-                  <div className="font-medium">Set Reminder</div>
-                </button>
-              </div>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                  <div>
+                    <label className="block text-sm text-slate-600 mb-1">Email</label>
+                    <input type="email" value={email} onChange={e => setEmail(e.target.value)} className="w-full px-3 py-2 border rounded-md" />
+                  </div>
+                  <div>
+                    <label className="block text-sm text-slate-600 mb-1">Contact Number</label>
+                    <input value={contactNumber} onChange={e => setContactNumber(e.target.value)} className="w-full px-3 py-2 border rounded-md" />
+                  </div>
+                </div>
+
+                <div className="mb-4">
+                  <label className="block text-sm text-slate-600 mb-1">Address</label>
+                  <input value={address} onChange={e => setAddress(e.target.value)} className="w-full px-3 py-2 border rounded-md" />
+                </div>
+
+                <div className="mb-6">
+                  <label className="block text-sm text-slate-600 mb-1">Birthday</label>
+                  <input type="date" value={birthday} onChange={e => setBirthday(e.target.value)} className="w-full px-3 py-2 border rounded-md" />
+                </div>
+
+                <div className="flex items-center space-x-3">
+                  <button type="submit" disabled={saving} className="px-4 py-2 bg-indigo-600 text-white rounded-lg shadow">
+                    {saving ? 'Saving...' : 'Save Changes'}
+                  </button>
+                  <button type="button" onClick={() => router.back()} className="px-4 py-2 bg-slate-200 text-slate-800 rounded-lg">
+                    Cancel
+                  </button>
+                </div>
+              </form>
             </div>
           </div>
         </div>

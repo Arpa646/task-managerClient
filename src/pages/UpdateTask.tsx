@@ -15,6 +15,7 @@ const UpdateTask: React.FC = () => {
 
   React.useEffect(() => {
     // Get task from sessionStorage (set by TaskList component)
+    let foundTask = false;
     if (typeof window !== 'undefined') {
       const storedTask = sessionStorage.getItem('editTask');
       if (storedTask) {
@@ -23,13 +24,15 @@ const UpdateTask: React.FC = () => {
           setTask(parsedTask);
           // Clear sessionStorage after reading
           sessionStorage.removeItem('editTask');
+          foundTask = true;
         } catch (error) {
           console.error('Error parsing task from sessionStorage:', error);
         }
       }
     }
-    
-    if (!taskId && !task) {
+
+    // Only redirect if we don't have a taskId and we didn't find a task in storage
+    if (!taskId && !foundTask) {
       router.push('/tasks');
     }
     setLoading(false);

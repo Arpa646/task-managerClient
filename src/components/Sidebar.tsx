@@ -28,7 +28,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onToggle, user, onLogout }) =
     setIsProfileOpen(false);
   };
 
-
+console.log("userr",user)
 
   // Close sidebar when clicking outside on mobile
   useEffect(() => {
@@ -85,7 +85,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onToggle, user, onLogout }) =
         
         {/* User Profile Section */}
         <div className="p-6 lg:p-8 border-b border-slate-700/50 bg-gradient-to-r from-slate-800/50 to-slate-700/50">
-          <div className="flex items-center space-x-4">
+          <div className="flex flex-col items-center space-x-4">
             <div className="relative">
               {user ? (
                 <button
@@ -97,9 +97,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onToggle, user, onLogout }) =
                     alt="Profile"
                     className="w-14 h-14 lg:w-16 lg:h-16 rounded-2xl object-cover border-2 border-slate-600 shadow-lg transition-all duration-300 group-hover:border-purple-500 group-hover:shadow-purple-500/25"
                   />
-                  {/* Online status indicator */}
-                  <div className="absolute -bottom-1 -right-1 w-4 h-4 lg:w-5 lg:h-5 bg-green-400 border-2 border-slate-900 rounded-full"></div>
-                  
+
                   {/* Profile dropdown indicator */}
                   <div className="absolute -top-1 -right-1 w-4 h-4 lg:w-5 lg:h-5 bg-purple-500 border-2 border-slate-900 rounded-full flex items-center justify-center">
                     <FaUser className="w-2 h-2 lg:w-2.5 lg:h-2.5 text-white" />
@@ -118,10 +116,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onToggle, user, onLogout }) =
               <p className="text-xs lg:text-sm text-slate-300 truncate">
                 {user?.email || 'user@example.com'}
               </p>
-              <div className="mt-2 flex items-center space-x-2">
-                <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></div>
-                <span className="text-xs text-slate-400">Online</span>
-              </div>
+             
             </div>
           </div>
 
@@ -158,28 +153,9 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onToggle, user, onLogout }) =
               Main Navigation
             </h3>
             <ul className="space-y-2">
-              <li>
-                <Link
-                  href="/dashboard"
-                  className={`group flex items-center space-x-3 lg:space-x-4 px-3 lg:px-4 py-3 lg:py-4 text-sm font-medium rounded-xl transition-all duration-300 ${
-                    isActive('/dashboard')
-                      ? 'bg-gradient-to-r from-purple-600/20 to-pink-600/20 border border-purple-500/30 text-purple-300 shadow-lg shadow-purple-500/20'
-                      : 'text-slate-300 hover:bg-slate-700/50 hover:text-white hover:shadow-lg'
-                  }`}
-                >
-                  <div className={`p-2 rounded-lg transition-all duration-300 ${
-                    isActive('/dashboard')
-                      ? 'bg-gradient-to-br from-purple-500 to-pink-500 text-white'
-                      : 'bg-slate-700/50 text-slate-400 group-hover:bg-gradient-to-br group-hover:from-purple-500 group-hover:to-pink-500 group-hover:text-white'
-                  }`}>
-                    <FaHome className="w-4 h-4 lg:w-5 lg:h-5" />
-                  </div>
-                  <span className="flex-1">Dashboard</span>
-                  {isActive('/dashboard') && (
-                    <div className="w-2 h-2 bg-purple-400 rounded-full animate-pulse"></div>
-                  )}
-                </Link>
-              </li>
+              {/* Dashboard link removed - app uses Tasks as primary landing */}
+             
+
               <li>
                 <Link
                   href="/tasks"
@@ -202,36 +178,33 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onToggle, user, onLogout }) =
                   )}
                 </Link>
               </li>
-              <li>
+             
+             <li>
                 <Link
-                  href="/analytics"
-                  className={`group flex items-center space-x-3 lg:space-x-4 px-3 lg:px-4 py-3 lg:py-4 text-sm font-medium rounded-xl transition-all duration-300 text-slate-300 hover:bg-slate-700/50 hover:text-white hover:shadow-lg`}
+                  href="/account1"
+                  className={`group flex items-center space-x-3 lg:space-x-4 px-3 lg:px-4 py-3 lg:py-4 text-sm font-medium rounded-xl transition-all duration-300 ${
+                    isActive('/account')
+                      ? 'bg-gradient-to-r from-purple-600/20 to-pink-600/20 border border-purple-500/30 text-purple-300 shadow-lg shadow-purple-500/20'
+                      : 'text-slate-300 hover:bg-slate-700/50 hover:text-white hover:shadow-lg'
+                  }`}
                 >
-                  <div className="p-2 rounded-lg transition-all duration-300 bg-slate-700/50 text-slate-400 group-hover:bg-gradient-to-br group-hover:from-blue-500 group-hover:to-cyan-500 group-hover:text-white">
-                    <FaChartBar className="w-4 h-4 lg:w-5 lg:h-5" />
+                  <div className={`p-2 rounded-lg transition-all duration-300 ${
+                    isActive('/account')
+                      ? 'bg-gradient-to-br from-purple-500 to-pink-500 text-white'
+                      : 'bg-slate-700/50 text-slate-400 group-hover:bg-gradient-to-br group-hover:from-purple-500 group-hover:to-pink-500 group-hover:text-white'
+                  }`}>
+                    <FaHome className="w-4 h-4 lg:w-5 lg:h-5" />
                   </div>
-                  <span className="flex-1">Analytics</span>
+                  <span className="flex-1">Account Information</span>
+                  {isActive('/account') && (
+                    <div className="w-2 h-2 bg-purple-400 rounded-full animate-pulse"></div>
+                  )}
                 </Link>
               </li>
             </ul>
           </div>
 
-          {/* Quick Actions */}
-          <div className="mb-6">
-            <h3 className="text-xs font-semibold text-slate-400 uppercase tracking-wider px-4 mb-3">
-              Quick Actions
-            </h3>
-            <ul className="space-y-2">
-              <li>
-                <button className="group w-full flex items-center space-x-3 lg:space-x-4 px-3 lg:px-4 py-3 lg:py-4 text-sm font-medium rounded-xl transition-all duration-300 text-slate-300 hover:bg-slate-700/50 hover:text-white hover:shadow-lg">
-                  <div className="p-2 rounded-lg transition-all duration-300 bg-slate-700/50 text-slate-400 group-hover:bg-gradient-to-br group-hover:from-indigo-500 group-hover:to-purple-500 group-hover:text-white">
-                    <FaCog className="w-4 h-4 lg:w-5 lg:h-5" />
-                  </div>
-                  <span className="flex-1 text-left">Settings</span>
-                </button>
-              </li>
-            </ul>
-          </div>
+       
         </nav>
 
         {/* Bottom Section */}

@@ -31,18 +31,14 @@ const TaskList: React.FC<TaskListProps> = ({ tasks, onDelete, loading = false, n
   }, [newlyCreatedTaskId]);
 
   console.log("TaskList received tasks:", tasks);
-  console.log("TaskList tasks length:", tasks?.length);
-  console.log("TaskList tasks type:", typeof tasks);
-  console.log("TaskList tasks is array:", Array.isArray(tasks));
-  console.log("TaskList tasks content:", JSON.stringify(tasks, null, 2));
 
   const handleUpdateClick = (task: Task) => {
     console.log('Navigating to update page for task:', task);
-    // Store task in sessionStorage temporarily for Next.js navigation
     if (typeof window !== 'undefined') {
       sessionStorage.setItem('editTask', JSON.stringify(task));
     }
-    router.push(`/tasks/edit?taskId=${task._id}`);
+    const rawId = (task as any)._id ?? task.id;
+    router.push(`/tasks/edit?taskId=${rawId}`);
   };
 
   // Drag and drop handlers
@@ -77,33 +73,31 @@ const TaskList: React.FC<TaskListProps> = ({ tasks, onDelete, loading = false, n
   };
 
   // Show loading skeleton if loading
-  if (loading) {
-    return <TaskSkeleton />;
-  }
-
-  if (tasks.length === 0) {
-    return <EmptyState />;
-  }
+  if (loading) return <TaskSkeleton />;
+  if (tasks.length === 0) return <EmptyState />;
 
   return (
-    <div className="space-y-4">
-      {tasks.map((task, index) => (
-        <div
-          key={task.id}
-          draggable
-          onDragStart={(e) => handleDragStart(e, index)}
-          onDragOver={handleDragOver}
-          onDrop={(e) => handleDrop(e, index)}
-        >
-          <TaskItem
-            task={task}
-            onDelete={onDelete}
-            onUpdate={handleUpdateClick}
-            newlyCreatedTaskId={newlyCreatedTaskId}
-            newlyCreatedTaskRef={newlyCreatedTaskId === task._id ? newlyCreatedTaskRef : undefined}
-          />
-        </div>
-      ))}
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+      {tasks.map((task, index) => {
+        const key = String((task as any)._id ?? task.id ?? index);
+        return (
+          <div
+            key={key}
+            draggable
+            onDragStart={(e) => handleDragStart(e, index)}
+            onDragOver={handleDragOver}
+            onDrop={(e) => handleDrop(e, index)}
+          >
+            <TaskItem
+              task={task}
+              onDelete={onDelete}
+              onUpdate={handleUpdateClick}
+              newlyCreatedTaskId={newlyCreatedTaskId}
+              newlyCreatedTaskRef={newlyCreatedTaskId === ((task as any)._id ?? task.id) ? newlyCreatedTaskRef : undefined}
+            />
+          </div>
+        );
+      })}
     </div>
   );
 };

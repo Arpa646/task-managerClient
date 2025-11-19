@@ -19,6 +19,11 @@ export default function AuthenticatedLayout({
   useEffect(() => {
     const checkAuthStatus = () => {
       const authUser = getAuthUser()
+
+console.log("authUser",authUser)
+
+
+
       if (authUser) {
         setUser(authUser)
       } else {

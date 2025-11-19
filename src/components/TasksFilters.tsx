@@ -51,38 +51,11 @@ const TasksFilters: React.FC<TasksFiltersProps> = ({
           />
         </div>
 
-        {/* Status Filter */}
-        <div className="flex items-center gap-2">
-          <select
-            value={filterStatus}
-            onChange={(e) => {
-              console.log('TasksFilters: Filter status changed to:', e.target.value);
-              onFilterStatusChange(e.target.value);
-            }}
-            className="px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
-          >
-            <option value="all">All Status</option>
-            <option value="todo">To Do</option>
-            <option value="in-progress">In Progress</option>
-            <option value="completed">Completed</option>
-          </select>
-        </div>
+      
 
         {/* Sort Options */}
         <div className="flex items-center gap-2">
-          <select
-            value={sortBy}
-            onChange={(e) => {
-              console.log('TasksFilters: Sort by changed to:', e.target.value);
-              onSortByChange(e.target.value);
-            }}
-            className="px-4 py-3 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
-          >
-            <option value="dueDate">Due Date</option>
-            <option value="priority">Priority</option>
-            <option value="title">Title</option>
-            <option value="status">Status</option>
-          </select>
+         
           <button
             onClick={() => {
               const newOrder = sortOrder === 'asc' ? 'desc' : 'asc';
@@ -96,22 +69,6 @@ const TasksFilters: React.FC<TasksFiltersProps> = ({
           </button>
         </div>
 
-        {/* Show/Hide Completed */}
-        <button
-          onClick={() => {
-            const newValue = !showCompleted;
-            console.log('TasksFilters: Show completed changed to:', newValue);
-            onShowCompletedChange(newValue);
-          }}
-          className={`px-4 py-3 rounded-lg transition-all duration-200 flex items-center gap-2 ${
-            showCompleted 
-              ? 'bg-green-100 text-green-700 hover:bg-green-200' 
-              : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-          }`}
-        >
-          {showCompleted ? <FaEye className="w-4 h-4" /> : <FaEyeSlash className="w-4 h-4" />}
-          {showCompleted ? 'Hide' : 'Show'} Completed
-        </button>
       </div>
     </div>
   );

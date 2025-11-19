@@ -20,37 +20,43 @@ const TaskItem: React.FC<TaskItemProps> = ({
   newlyCreatedTaskId, 
   newlyCreatedTaskRef 
 }) => {
-  const isOverdue = (dueDate: string) => {
+  const isOverdue = (dueDate?: string) => {
+    if (!dueDate) return false;
     return new Date(dueDate) < new Date();
   };
 
+  const priorityColor = (priority?: string) => {
+    switch ((priority || '').toLowerCase()) {
+      case 'high':
+        return 'border-red-200 bg-red-50';
+      case 'medium':
+      case 'moderate':
+        return 'border-green-200 bg-green-50';
+      case 'low':
+        return 'border-yellow-200 bg-yellow-50';
+      default:
+        return 'border-gray-200 bg-white';
+    }
+  };
+
+  const idKey = (task as any)._id || (task as any).id || '';
+  const priorityLabel = task.priority || 'N/A';
+
   return (
-    <div
-      ref={newlyCreatedTaskId === task._id ? newlyCreatedTaskRef : undefined}
-      className={`group bg-white border border-gray-200 rounded-xl hover:shadow-lg transition-all duration-300 ${
-        task._id.startsWith('temp-') ? 'opacity-70' : ''
-      } ${isOverdue(task.dueDate) && task.status !== 'completed' ? 'border-l-4 border-l-red-500' : ''} ${
-        newlyCreatedTaskId === task._id ? 'ring-2 ring-green-500 bg-green-50 animate-pulse' : ''
-      }`}
-    >
-      <div className="p-6">
+    <div ref={newlyCreatedTaskRef} className={`rounded-xl shadow-sm border ${priorityColor(String(priorityLabel))}`}>
+      <div className="p-5">
         <div className="flex items-start gap-4">
-          {/* Task Icon */}
           <TaskIcon task={task} />
 
-          {/* Task Content */}
           <div className="flex-1 min-w-0">
             <div className="flex items-start justify-between gap-4">
               <div className="flex-1">
-                {/* Task Title and Description */}
                 <div className="mb-3">
                   <div className="flex items-center gap-2 mb-2">
-                    <h3 className={`text-lg font-semibold text-gray-900 ${
-                      task.status === 'completed' ? 'line-through text-gray-500' : ''
-                    }`}>
+                    <h3 className={`text-lg font-semibold text-gray-900 ${task.status === 'completed' ? 'line-through text-gray-500' : ''}`}>
                       {task.title}
                     </h3>
-                    {newlyCreatedTaskId === task._id && (
+                    {newlyCreatedTaskId === idKey && (
                       <span className="bg-green-100 text-green-800 text-xs font-medium px-2 py-1 rounded-full">
                         New
                       </span>
@@ -63,21 +69,14 @@ const TaskItem: React.FC<TaskItemProps> = ({
                   )}
                 </div>
 
-                {/* Task Meta Information */}
                 <TaskMeta task={task} />
 
-                {/* Task Badges */}
                 <div className="flex flex-wrap items-center gap-3 mt-3">
-                  <TaskBadges status={task.status} priority={task.priority} />
+                  <TaskBadges priority={task.priority} />
                 </div>
               </div>
 
-              {/* Action Buttons */}
-              <TaskActions 
-                task={task} 
-                onDelete={onDelete} 
-                onUpdate={onUpdate} 
-              />
+              <TaskActions task={task} onDelete={onDelete} onUpdate={onUpdate} />
             </div>
           </div>
         </div>

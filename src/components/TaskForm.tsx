@@ -1,5 +1,8 @@
+'use client'
+
 import React, { useState, useEffect } from 'react';
 import { taskService, type CreateTaskData, type Task, type UpdateTaskData } from '../services/taskService';
+import { getAuthToken, getAuthUser } from '../utils/auth';
 
 interface TaskFormProps {
   task?: Task;
@@ -35,22 +38,23 @@ const TaskForm: React.FC<TaskFormProps> = ({ task, onComplete, onError }) => {
     try {
       setIsSubmitting(true);
       
-      const userStr = localStorage.getItem('user');
-      const authToken = localStorage.getItem('authToken');
+      // const user = getAuthUser();
+      // console.log("user",)
+      const authToken = getAuthToken();
       
       if (!authToken) throw new Error('Authentication token not found');
-      if (!userStr) throw new Error('User not found');
+      // if (!user) throw new Error('User not found');
 
-      const user = JSON.parse(userStr);
-      if (!user._id) throw new Error('User ID not found');
+      // const userId = user._id;
+      // if (!userId) throw new Error('User ID not found');
 
       const taskData: CreateTaskData | UpdateTaskData = {
         title: title.trim(),
         description: description.trim(),
         dueDate,
         priority,
-        status,
-        userId: user._id,
+        // status,
+        // userId,
       };
 
 
@@ -68,7 +72,7 @@ const TaskForm: React.FC<TaskFormProps> = ({ task, onComplete, onError }) => {
           setDescription('');
           setDueDate('');
           setPriority('medium');
-          setStatus('todo');
+          // setStatus('todo');
           
           // Call onComplete with the created task
           console.log('TaskForm: Calling onComplete with:', createdTask);
@@ -192,7 +196,7 @@ const TaskForm: React.FC<TaskFormProps> = ({ task, onComplete, onError }) => {
             </div>
 
             {/* Status */}
-            <div className="space-y-2">
+            {/* <div className="space-y-2">
               <label htmlFor="status" className="flex items-center gap-2 text-sm font-semibold text-gray-700">
                 <svg className="w-4 h-4 text-purple-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
@@ -209,7 +213,7 @@ const TaskForm: React.FC<TaskFormProps> = ({ task, onComplete, onError }) => {
                 <option value="in-progress">🔄 In Progress</option>
                 <option value="completed">✅ Completed</option>
               </select>
-            </div>
+            </div> */}
           </div>
 
           {/* Submit Button */}

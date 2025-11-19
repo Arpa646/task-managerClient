@@ -37,10 +37,10 @@ const Tasks: React.FC = () => {
   const [userId, setUserId] = useState<string | null>(null);
   
   // Debug effect to log userId state changes
-  useEffect(() => {
-    console.log('Tasks page: UserId state changed:', userId);
-  }, [userId]);
-  const [loading, setLoading] = useState(true);
+  // useEffect(() => {
+  //   console.log('Tasks page: UserId state changed:', userId);
+  // }, [userId]);
+   const [loading, setLoading] = useState(true);
   
   // Debug effect to log loading state changes
   useEffect(() => {
@@ -84,7 +84,9 @@ const Tasks: React.FC = () => {
         }
         
         const user = getAuthUser();
+     
         const authToken = getAuthToken();
+        console.log("bbbbbbbbbbbbbbbbbbbbbb",authToken)
         console.log('Auth token exists:', !!authToken);
         console.log('Current user:', user);
         
@@ -92,17 +94,17 @@ const Tasks: React.FC = () => {
           throw new Error('Authentication token not found');
         }
         
-        if (!user) {
-          throw new Error('User not found');
-        }
-        if (!user._id) {
-          throw new Error('User ID not found');
-        }
+        // if (!user) {
+        //   throw new Error('User not found');
+        // }
+        // if (!user._id) {
+        //   throw new Error('User ID not found');
+        // }
         
-        console.log('Tasks page: Setting userId:', user._id);
-        setUserId(user._id);
+        // console.log('Tasks page: Setting userId:', user._id);
+        // setUserId(user._id);
         console.log('Tasks page: Fetching user tasks...');
-        await fetchUserTasks(user._id);
+        await fetchUserTasks();
       } catch (err) {
         console.error('Error in initializeTasks:', err);
         const errorMessage = err instanceof Error ? err.message : 'Failed to initialize tasks';
@@ -128,10 +130,14 @@ const Tasks: React.FC = () => {
     };
   }, []);
 
-  const fetchUserTasks = async (id: string) => {
+  const fetchUserTasks = async () => {
     try {
-      console.log('Tasks page: fetchUserTasks called with ID:', id);
-      const userTasks = await taskService.getUserTasks(id);
+      console.log('Tasks page: fetchUserTasks called');
+      const userTasks = await taskService.getUserTasks();
+
+console.log("userTask",userTasks)
+
+
       console.log('Fetched tasks:', userTasks);
       console.log('Fetched tasks type:', typeof userTasks);
       console.log('Fetched tasks is array:', Array.isArray(userTasks));
@@ -162,16 +168,15 @@ const Tasks: React.FC = () => {
   };
 
   const refreshTasks = async () => {
-    if (userId) {
-      try {
-        console.log('Tasks page: Refreshing tasks for user:', userId);
-        console.log('Tasks page: Current tasks before refresh:', tasks);
-        
-        // Store current tasks to compare later
-        const currentTasks = [...tasks];
-        
-        await fetchUserTasks(userId);
-        console.log('Tasks page: Tasks refreshed successfully');
+    try {
+      console.log('Tasks page: Refreshing tasks');
+      console.log('Tasks page: Current tasks before refresh:', tasks);
+
+      // Store current tasks to compare later
+      const currentTasks = [...tasks];
+
+      await fetchUserTasks();
+      console.log('Tasks page: Tasks refreshed successfully');
         
         // Use a timeout to check for lost tasks after state update
         setTimeout(() => {
@@ -193,13 +198,10 @@ const Tasks: React.FC = () => {
             });
           }
         }, 100);
-      } catch (error) {
-        console.error('Tasks page: Error refreshing tasks:', error);
-        // Don't set error state here as it might be a temporary network issue
-        // Just log it for debugging
-      }
-    } else {
-      console.log('Tasks page: Cannot refresh tasks - no userId');
+    } catch (error) {
+      console.error('Tasks page: Error refreshing tasks:', error);
+      // Don't set error state here as it might be a temporary network issue
+      // Just log it for debugging
     }
   };
 
@@ -358,12 +360,12 @@ const Tasks: React.FC = () => {
                       setTasks(newTasks);
 
                       // Attempt to persist ordering (best-effort). Server must support reorder endpoint.
-                      if (userId) {
-                        const success = await taskService.reorderTasks(userId, newTasks.map(t => t._id));
-                        if (!success) {
-                          console.warn('Tasks page: reorder API did not persist ordering');
-                        }
-                      }
+                      // if (userId) {
+                      //   const success = await taskService.reorderTasks(userId, newTasks.map(t => t._id));
+                      //   if (!success) {
+                      //     console.warn('Tasks page: reorder API did not persist ordering');
+                      //   }
+                      // }
                     } catch (err) {
                       console.error('Tasks page: Error handling reorder:', err);
                     }

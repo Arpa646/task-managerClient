@@ -89,7 +89,7 @@ const TaskList: React.FC<TaskListProps> = ({ tasks, onDelete, loading = false, n
     <div className="space-y-4">
       {tasks.map((task, index) => (
         <div
-          key={task._id}
+          key={task.id}
           draggable
           onDragStart={(e) => handleDragStart(e, index)}
           onDragOver={handleDragOver}

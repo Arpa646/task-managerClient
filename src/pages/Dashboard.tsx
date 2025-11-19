@@ -17,11 +17,11 @@ const Dashboard: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  const fetchUserTasks = useCallback(async (userId: string) => {
+  const fetchUserTasks = useCallback(async () => {
     try {
       setLoading(true);
       setError(null);
-      const userTasks = await taskService.getUserTasks(userId);
+      const userTasks = await taskService.getUserTasks();
       setTasks(userTasks as any);
     } catch (error) {
       console.error('Error fetching tasks:', error);
@@ -34,7 +34,7 @@ const Dashboard: React.FC = () => {
 
   useEffect(() => {
     if (user?._id) {
-      fetchUserTasks(user._id);
+      fetchUserTasks();
     } else {
       setLoading(false);
     }

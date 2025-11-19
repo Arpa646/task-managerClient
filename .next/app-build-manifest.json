@@ -16,20 +16,15 @@
       "static/chunks/main-app.js",
       "static/chunks/app/(authenticated)/page.js"
     ],
-    "/login/page": [
+    "/(authenticated)/tasks/page": [
       "static/chunks/webpack.js",
       "static/chunks/main-app.js",
-      "static/chunks/app/login/page.js"
+      "static/chunks/app/(authenticated)/tasks/page.js"
     ],
     "/(authenticated)/dashboard/page": [
       "static/chunks/webpack.js",
       "static/chunks/main-app.js",
       "static/chunks/app/(authenticated)/dashboard/page.js"
-    ],
-    "/(authenticated)/tasks/page": [
-      "static/chunks/webpack.js",
-      "static/chunks/main-app.js",
-      "static/chunks/app/(authenticated)/tasks/page.js"
     ]
   }
 }

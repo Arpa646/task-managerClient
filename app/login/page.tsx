@@ -4,6 +4,7 @@ import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { EyeIcon, EyeSlashIcon, CalendarIcon } from '@heroicons/react/24/outline'
+import { API_CONFIG } from '@/src/config'
 import { setAuth, AuthUser, getRedirectUrl, clearRedirectUrl } from '@/src/utils/auth'
 
 export default function LoginPage() {
@@ -46,15 +47,15 @@ export default function LoginPage() {
     try {
       console.log('Attempting login with:', { email: formData.email })
       
-      const response = await fetch(`https://task-manager-server-three-iota.vercel.app/api/auth/login`, {
+      // Create FormData for the request
+      const formDataToSend = new FormData()
+      formDataToSend.append('email', formData.email)
+      formDataToSend.append('password', formData.password)
+
+      const response = await fetch(`${API_CONFIG.BASE_URL}${API_CONFIG.ENDPOINTS.AUTH.LOGIN}`, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          email: formData.email,
-          password: formData.password
-        })
+        body: formDataToSend
+        // Don't set Content-Type header - browser will set it automatically with boundary for FormData
       })
 
       console.log('Login response status:', response.status)
@@ -62,8 +63,16 @@ export default function LoginPage() {
       console.log('Login response data:', data)
 
       if (response.ok) {
-        if (data.token && data.data) {
-          setAuth(data.token, data.data)
+        // Handle response - adjust based on actual API response structure
+        const token = data.token || data.access || data.access_token
+        const user = data.user || data.data || {
+          _id: data.id || data.user_id,
+          name: data.name || data.first_name + ' ' + data.last_name || '',
+          email: formData.email
+        }
+        
+        if (token && user) {
+          setAuth(token, user)
           
           const redirectUrl = getRedirectUrl()
           if (redirectUrl) {
@@ -79,8 +88,9 @@ export default function LoginPage() {
           setErrors({ general: 'Invalid response from server. Please try again.' })
         }
       } else {
+        const errorMessage = data.message || data.error || data.detail || 'Login failed. Please try again.'
         console.error('Login failed with status:', response.status, data)
-        setErrors({ general: data.message || 'Login failed. Please try again.' })
+        setErrors({ general: errorMessage })
       }
     } catch (error) {
       console.error('Login error:', error)

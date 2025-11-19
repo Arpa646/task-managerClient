@@ -3,33 +3,36 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
-import { EyeIcon, EyeSlashIcon, CalendarIcon, PhotoIcon } from '@heroicons/react/24/outline'
+import { EyeIcon, EyeSlashIcon, CalendarIcon } from '@heroicons/react/24/outline'
 import { API_CONFIG } from '@/src/config'
 import { setAuth, AuthUser, getRedirectUrl, clearRedirectUrl } from '@/src/utils/auth'
 
 export default function RegisterPage() {
   const router = useRouter()
-  const IMG_BB_API_KEY = "9717d5d4436d262250f736d12880032f"
   
   const [formData, setFormData] = useState({
-    name: '',
+    first_name: '',
+    last_name: '',
     email: '',
-    password: '',
-    image: ''
+    password: ''
   })
   const [errors, setErrors] = useState<Record<string, string>>({})
   const [showPassword, setShowPassword] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
-  const [uploading, setUploading] = useState(false)
-  const [imagePreview, setImagePreview] = useState<string>('')
 
   const validateForm = () => {
     const newErrors: Record<string, string> = {}
 
-    if (!formData.name) {
-      newErrors.name = 'Name is required'
-    } else if (formData.name.length < 2) {
-      newErrors.name = 'Name must be at least 2 characters'
+    if (!formData.first_name) {
+      newErrors.first_name = 'First name is required'
+    } else if (formData.first_name.length < 2) {
+      newErrors.first_name = 'First name must be at least 2 characters'
+    }
+
+    if (!formData.last_name) {
+      newErrors.last_name = 'Last name is required'
+    } else if (formData.last_name.length < 2) {
+      newErrors.last_name = 'Last name must be at least 2 characters'
     }
 
     if (!formData.email) {
@@ -44,10 +47,6 @@ export default function RegisterPage() {
       newErrors.password = 'Password must be at least 6 characters'
     }
 
-    if (!formData.image) {
-      newErrors.image = 'Profile picture is required'
-    }
-
     setErrors(newErrors)
     return Object.keys(newErrors).length === 0
   }
@@ -60,37 +59,49 @@ export default function RegisterPage() {
     setIsLoading(true)
     
     try {
+      // Create FormData for the request
+      const formDataToSend = new FormData()
+      formDataToSend.append('first_name', formData.first_name)
+      formDataToSend.append('last_name', formData.last_name)
+      formDataToSend.append('email', formData.email)
+      formDataToSend.append('password', formData.password)
+
       const response = await fetch(`${API_CONFIG.BASE_URL}${API_CONFIG.ENDPOINTS.AUTH.SIGNUP}`, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          name: formData.name,
-          email: formData.email,
-          password: formData.password,
-          photoURL: formData.image
-        })
+        body: formDataToSend
+        // Don't set Content-Type header - browser will set it automatically with boundary for FormData
       })
 
       const data = await response.json()
 
       if (response.ok) {
-        setAuth(data.token, data.user)
+        // Handle response - adjust based on actual API response structure
+        const token = data.token || data.access || data.access_token
+        const user = data.user || data.data || {
+          _id: data.id || data.user_id,
+          name: `${formData.first_name} ${formData.last_name}`,
+          email: formData.email
+        }
         
-        const redirectUrl = getRedirectUrl()
-        if (redirectUrl) {
-          console.log('Registration successful, redirecting to:', redirectUrl)
-          clearRedirectUrl()
-          router.push(redirectUrl)
+        if (token && user) {
+          setAuth(token, user)
+          
+          const redirectUrl = getRedirectUrl()
+          if (redirectUrl) {
+            console.log('Registration successful, redirecting to:', redirectUrl)
+            clearRedirectUrl()
+            router.push(redirectUrl)
+          } else {
+            console.log('Registration successful, navigating to dashboard')
+            router.push('/dashboard')
+          }
         } else {
-          console.log('Registration successful, navigating to dashboard')
-          router.push('/dashboard')
+          setErrors({ general: 'Invalid response from server. Please try again.' })
         }
       } else {
-        const errorMessage = data.message || 'Registration failed. Please try again.'
+        const errorMessage = data.message || data.error || data.detail || 'Registration failed. Please try again.'
         
-        if (data.message && (data.message.includes('E11000') || data.message.includes('duplicate key') || data.message.includes('email_1'))) {
+        if (errorMessage.includes('email') && (errorMessage.includes('exists') || errorMessage.includes('already'))) {
           setErrors({ 
             email: 'An account with this email already exists. Please use a different email or try logging in.',
             general: ''
@@ -116,49 +127,6 @@ export default function RegisterPage() {
     }
   }
 
-  const handleImageChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0]
-    if (file) {
-      if (!file.type.startsWith('image/')) {
-        setErrors(prev => ({ ...prev, image: 'Please select a valid image file' }))
-        return
-      }
-      
-      if (file.size > 5 * 1024 * 1024) {
-        setErrors(prev => ({ ...prev, image: 'Image size must be less than 5MB' }))
-        return
-      }
-
-      const formDataUpload = new FormData()
-      formDataUpload.append("image", file)
-
-      setUploading(true)
-      try {
-        const res = await fetch(
-          `https://api.imgbb.com/1/upload?key=${IMG_BB_API_KEY}`,
-          {
-            method: "POST",
-            body: formDataUpload,
-          }
-        )
-        const data = await res.json()
-        if (data.success) {
-          setFormData((prev) => ({ ...prev, image: data.data.url }))
-          setImagePreview(data.data.url)
-        } else {
-          setErrors(prev => ({ ...prev, image: "Image upload failed. Please try again." }))
-        }
-      } catch {
-        setErrors(prev => ({ ...prev, image: "Error uploading image." }))
-      } finally {
-        setUploading(false)
-      }
-      
-      if (errors.image) {
-        setErrors(prev => ({ ...prev, image: '' }))
-      }
-    }
-  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-900 via-black to-gray-800 flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
@@ -183,22 +151,42 @@ export default function RegisterPage() {
 
           <form onSubmit={handleSubmit} className="space-y-6">
             <div>
-              <label htmlFor="name" className="block text-sm font-medium text-gray-300 mb-2">
-                Full Name
+              <label htmlFor="first_name" className="block text-sm font-medium text-gray-300 mb-2">
+                First Name
               </label>
               <input
-                id="name"
-                name="name"
+                id="first_name"
+                name="first_name"
                 type="text"
-                value={formData.name}
+                value={formData.first_name}
                 onChange={handleChange}
                 className={`w-full px-4 py-3 bg-gray-800 border rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-200 text-white placeholder-gray-400 ${
-                  errors.name ? 'border-red-500' : 'border-gray-600'
+                  errors.first_name ? 'border-red-500' : 'border-gray-600'
                 }`}
-                placeholder="Enter your full name"
+                placeholder="Enter your first name"
               />
-              {errors.name && (
-                <p className="mt-2 text-sm text-red-400">{errors.name}</p>
+              {errors.first_name && (
+                <p className="mt-2 text-sm text-red-400">{errors.first_name}</p>
+              )}
+            </div>
+
+            <div>
+              <label htmlFor="last_name" className="block text-sm font-medium text-gray-300 mb-2">
+                Last Name
+              </label>
+              <input
+                id="last_name"
+                name="last_name"
+                type="text"
+                value={formData.last_name}
+                onChange={handleChange}
+                className={`w-full px-4 py-3 bg-gray-800 border rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-200 text-white placeholder-gray-400 ${
+                  errors.last_name ? 'border-red-500' : 'border-gray-600'
+                }`}
+                placeholder="Enter your last name"
+              />
+              {errors.last_name && (
+                <p className="mt-2 text-sm text-red-400">{errors.last_name}</p>
               )}
             </div>
 
@@ -255,52 +243,6 @@ export default function RegisterPage() {
               )}
             </div>
 
-            <div>
-              <label htmlFor="image" className="block text-sm font-medium text-gray-300 mb-2">
-                Profile Picture <span className="text-red-400">*</span>
-              </label>
-              <div className="flex items-center space-x-4">
-                {imagePreview && (
-                  <div className="w-16 h-16 rounded-full overflow-hidden bg-gray-800">
-                    <img
-                      src={imagePreview}
-                      alt="Preview"
-                      className="w-full h-full object-cover"
-                    />
-                  </div>
-                )}
-                <label
-                  htmlFor="image"
-                  className={`flex-1 flex items-center justify-center px-4 py-3 border-2 border-dashed rounded-lg transition-all duration-200 ${
-                    uploading ? 'cursor-not-allowed opacity-50' : 'cursor-pointer'
-                  } ${
-                    errors.image ? 'border-red-500' : 'border-gray-600 hover:border-purple-500'
-                  }`}
-                >
-                  <PhotoIcon className="h-5 w-5 text-gray-400 mr-2" />
-                  <span className="text-gray-400">
-                    {uploading ? (
-                      <div className="flex items-center">
-                        <div className="animate-spin rounded-full h-4 w-4 border-t-2 border-gray-400 mr-2"></div>
-                        Uploading...
-                      </div>
-                    ) : formData.image ? 'Image uploaded' : 'Choose image (required)'}
-                  </span>
-                </label>
-                <input
-                  id="image"
-                  name="image"
-                  type="file"
-                  accept="image/*"
-                  onChange={handleImageChange}
-                  disabled={uploading}
-                  className="hidden"
-                />
-              </div>
-              {errors.image && (
-                <p className="mt-2 text-sm text-red-400">{errors.image}</p>
-              )}
-            </div>
 
             <button
               type="submit"

@@ -1,5 +1,5 @@
 import { API_CONFIG } from '../config';
-import { getAuthHeaders } from '../utils/auth';
+import { getAuthHeaders, getAuthToken } from '../utils/auth';
 
 // Task interfaces
 export interface Task {
@@ -49,6 +49,7 @@ export interface ApiResponse {
 
 class TaskService {
   private baseUrl = API_CONFIG.BASE_URL;
+  private tasksBaseUrl = API_CONFIG.TASKS_BASE_URL || API_CONFIG.BASE_URL;
   private endpoints = API_CONFIG.ENDPOINTS.TASKS;
 
   /**
@@ -83,67 +84,30 @@ class TaskService {
 
 
 
-  async getUserTasks(id: string): Promise<Task[]> {
+  async getUserTasks(): Promise<Task[]> {
     try {
-      // Ensure we're on the client side
-      if (typeof window === 'undefined') {
-        throw new Error('getUserTasks can only be called on the client side');
-      }
-
-      console.log('TaskService: Fetching tasks for user ID:', id);
-      const headers = getAuthHeaders();
-      console.log('TaskService: Request headers:', headers);
-      
-      // Use the endpoint with userId
-      const url = `${this.baseUrl}${this.endpoints.GET_USER_TASKS_BY_ID.replace(':userId', id)}`;
-      console.log('TaskService: Request URL:', url);
-      console.log('TaskService: User ID:', id);
-      
+      const url = `${this.baseUrl}${this.endpoints.GET_ALL}`;
+  
       const response = await fetch(url, {
-        method: 'GET',
-        headers,
-        cache: 'no-store', // Ensure fresh data
+        method: "GET",
+        headers: getAuthHeaders(),
+        cache: "no-store",
       });
-      
-      console.log('TaskService: Response status:', response.status);
-      
+  
       if (!response.ok) {
-        const errorText = await response.text();
-        console.error('TaskService: HTTP error:', response.status, response.statusText, errorText);
-        throw new Error(`HTTP error! status: ${response.status}, message: ${errorText}`);
+        throw new Error(`HTTP error: ${response.status}`);
       }
-      
-      const data: any = await response.json();
-      console.log("TaskService: Full response data:", data);
-      
-      if (data.success) {
-        // Handle different response structures
-        let tasks: Task[] = [];
-        if (data.data && Array.isArray(data.data.tasks)) {
-          tasks = data.data.tasks;
-        } else if (data.data && Array.isArray(data.data)) {
-          tasks = data.data;
-        } else if (Array.isArray(data.tasks)) {
-          tasks = data.tasks;
-        } else if (Array.isArray(data)) {
-          tasks = data;
-        }
-        
-        console.log('TaskService: Extracted tasks:', tasks);
-        return tasks;
-      } else {
-        console.error('TaskService: API error response:', data);
-        throw new Error(data.message || 'Failed to fetch tasks');
-      }
+  
+      const data = await response.json();
+  
+      // 👇 SIMPLE response handling
+      return Array.isArray(data.results) ? data.results : [];
     } catch (error) {
-      console.error('Error fetching tasks:', error);
-      if (error instanceof TypeError && error.message === 'Failed to fetch') {
-        console.error('TaskService: Network error - check CORS, API availability, or network connection');
-        throw new Error('Network error: Unable to reach the server. Please check your internet connection and try again.');
-      }
-      throw error;
+      console.error("Error fetching tasks:", error);
+      throw new Error("Failed to fetch tasks.");
     }
   }
+  
 
 
 
@@ -191,14 +155,42 @@ class TaskService {
   async createTask(taskData: CreateTaskData): Promise<Task> {
     try {
       console.log('TaskService: Creating new task:', taskData);
-      console.log('TaskService: Request URL:', `${this.baseUrl}${this.endpoints.CREATE}`);
-      const headers = getAuthHeaders();
-      console.log('TaskService: Auth Headers:', headers); // Log the full headers
+      const endpoint = `${this.tasksBaseUrl}${this.endpoints.CREATE}`;
+      console.log('TaskService: Request URL:', endpoint);
+
+      // Prepare FormData payload as required by the API
+      const formData = new FormData();
+      formData.append('title', taskData.title);
+      formData.append('description', taskData.description ?? '');
+
+      // Map internal priority to API expected values (e.g., medium -> moderate)
+      const priorityMap: Record<string, string> = {
+        low: 'low',
+        medium: 'moderate',
+        high: 'high',
+      };
+      const mappedPriority = priorityMap[taskData.priority] || taskData.priority || 'moderate';
+      formData.append('priority', mappedPriority);
+
+      if (taskData.dueDate) {
+        const dueDate = new Date(taskData.dueDate);
+        if (!Number.isNaN(dueDate.getTime())) {
+          formData.append('todo_date', dueDate.toISOString().split('T')[0]);
+        } else {
+          formData.append('todo_date', taskData.dueDate);
+        }
+      }
+
+      const token = getAuthToken();
+      const headers: HeadersInit = {};
+      if (token) {
+        headers['Authorization'] = `Bearer ${token}`;
+      }
       
-      const response = await fetch(`${this.baseUrl}${this.endpoints.CREATE}`, {
+      const response = await fetch(endpoint, {
         method: 'POST',
         headers,
-        body: JSON.stringify(taskData),
+        body: formData,
       });
 
       console.log('TaskService: Response status:', response.status);
@@ -211,22 +203,15 @@ class TaskService {
       const data = await response.json();
       console.log('TaskService: Response data:', data);
 
-      if (response.ok && data.success) {
-        console.log('TaskService: Task created successfully:', data.data);
-        console.log('TaskService: Response data structure:', data);
-        console.log('TaskService: Task data type:', typeof data.data);
-        
-        // Ensure we return a valid task object
-        const task = data.data;
-        console.log("ckek",task)
-        // return task;
-        if (task && typeof task === 'object' && task._id) {
-          console.log('TaskService: Valid task object returned:', task);
-          return task;
-        } else {
-          console.error('TaskService: Invalid task object in response:', task);
-          throw new Error('Invalid task object received from server');
+      if (response.ok) {
+        const createdTask = data.data || data.todo || data.task || data;
+        console.log('TaskService: Task created successfully:', createdTask);
+
+        if (createdTask && typeof createdTask === 'object') {
+          return createdTask as Task;
         }
+
+        throw new Error('Invalid task object received from server');
       } else {
         console.error('TaskService: API error response:', data);
         throw new Error(data.message || `Failed to create task: ${response.status}`);

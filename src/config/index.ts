@@ -1,11 +1,15 @@
+const DEFAULT_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'https://todo-app.pioneeralpha.com'
+const DEFAULT_TASKS_BASE_URL = process.env.NEXT_PUBLIC_TASKS_API_BASE_URL || DEFAULT_BASE_URL
+
 // API Configuration
 export const API_CONFIG = {
-  BASE_URL: 'https://task-manager-server-three-iota.vercel.app/api',
+  BASE_URL: DEFAULT_BASE_URL,
+  TASKS_BASE_URL: DEFAULT_TASKS_BASE_URL,
   ENDPOINTS: {
     AUTH: {
-      LOGIN: '/auth/login',
-      SIGNUP: '/auth/signup',
-      REFRESH: '/auth/refresh'
+      LOGIN: '/api/auth/login/',
+      SIGNUP: '/api/users/signup/',
+      REFRESH: '/api/users/refresh/'
     },
     EVENTS: {
       GET_ALL: '/events',
@@ -15,13 +19,13 @@ export const API_CONFIG = {
       DELETE: '/events'
     },
     TASKS: {
-      GET_ALL: '/tasks',
-      GET_USER_TASKS: '/tasks/user',
-      GET_USER_TASKS_BY_ID: '/tasks/user/:userId/tasks',
-      CREATE: '/tasks/create-task',
-      UPDATE: '/tasks',
-      DELETE: '/tasks',
-      SEARCH: '/tasks/search'
+      GET_ALL: '/api/todos/',
+      GET_USER_TASKS: '/api/todos/',
+      GET_USER_TASKS_BY_ID: '/api/todos/',
+      CREATE: '/api/todos/',
+      UPDATE: '/api/todos/',
+      DELETE: '/api/todos/',
+      SEARCH: '/api/todos/search'
     }
   }
 };
